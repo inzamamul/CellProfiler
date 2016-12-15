@@ -8,6 +8,7 @@ from StringIO import StringIO
 
 import numpy as np
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -319,10 +320,10 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
         columns = module.get_measurement_columns(None)
-        expected = ((cpm.IMAGE, cpmi.FF_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
-                    (TERTIARY, cpmi.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
-                    (TERTIARY, cpmi.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
-                    (TERTIARY, cpmi.M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
+        expected = ((cpm.IMAGE, cellprofiler.measurement.region.FF_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
+                    (TERTIARY, cellprofiler.measurement.region.M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
+                    (TERTIARY, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
                     (PRIMARY, cpmi.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
                     (SECONDARY, cpmi.FF_CHILDREN_COUNT % TERTIARY, cpm.COLTYPE_INTEGER),
                     (TERTIARY, cpmi.FF_PARENT % PRIMARY, cpm.COLTYPE_INTEGER),
@@ -400,7 +401,8 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 self.assertEqual(parent_of[child - 1], child)
 
         for location_feature in (
-                cpmi.M_LOCATION_CENTER_X, cpmi.M_LOCATION_CENTER_Y):
+                cellprofiler.measurement.region.M_LOCATION_CENTER_X,
+                cellprofiler.measurement.region.M_LOCATION_CENTER_Y):
             values = measurements.get_current_measurement(
                     TERTIARY, location_feature)
             self.assertTrue(np.all(np.isnan(values) == [False, True, False]))

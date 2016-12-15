@@ -8,6 +8,7 @@ from StringIO import StringIO
 
 import numpy as np
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -327,7 +328,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(len(measurements), len(features))
         self.assertEqual(len(set(measurements)), len(features))
         self.assertTrue(all([measurement in features for measurement in measurements]))
-        self.assertEqual(len(module.get_measurements(pipeline, cpmeas.IMAGE, I.C_COUNT)), 0)
+        self.assertEqual(len(module.get_measurements(pipeline, cpmeas.IMAGE, cellprofiler.measurement.region.C_COUNT)), 0)
 
         for measurement in measurements:
             image_names = module.get_measurement_images(pipeline, cpmeas.IMAGE,

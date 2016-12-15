@@ -59,6 +59,7 @@ import numpy as np
 from centrosome.outline import outline
 
 import cellprofiler.image as cpi
+import cellprofiler.measurement.region
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
@@ -292,15 +293,15 @@ class IdentifyTertiaryObjects(cpm.Module):
         #
         # The object count
         #
-        cpmi.add_object_count_measurements(workspace.measurements,
-                                           self.subregion_objects_name.value,
-                                           object_count)
+        cellprofiler.measurement.region.add_object_count_measurements(workspace.measurements,
+                                                                      self.subregion_objects_name.value,
+                                                                      object_count)
         #
         # The object locations
         #
-        cpmi.add_object_location_measurements(workspace.measurements,
-                                              self.subregion_objects_name.value,
-                                              tertiary_labels)
+        cellprofiler.measurement.region.add_object_location_measurements(workspace.measurements,
+                                                                         self.subregion_objects_name.value,
+                                                                         tertiary_labels)
         #
         # The outlines
         #
@@ -345,7 +346,7 @@ class IdentifyTertiaryObjects(cpm.Module):
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         subregion_name = self.subregion_objects_name.value
-        columns = cpmi.get_object_measurement_columns(subregion_name)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,
                        self.secondary_objects_name.value):
             columns += [(parent,

@@ -32,6 +32,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
 import cellprofiler.image as cpi
+import cellprofiler.measurement.region
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
@@ -316,9 +317,9 @@ class MaskObjects(I.Identify):
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        I.add_object_count_measurements(m, remaining_object_name,
-                                        remaining_object_count)
-        I.add_object_location_measurements(m, remaining_object_name, labels)
+        cellprofiler.measurement.region.add_object_count_measurements(m, remaining_object_name,
+                                                                      remaining_object_count)
+        cellprofiler.measurement.region.add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Add an outline if asked to do so
         #
@@ -380,7 +381,7 @@ class MaskObjects(I.Identify):
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
-        columns = I.get_object_measurement_columns(self.remaining_objects.value)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(self.remaining_objects.value)
         columns += [(object_name, I.FF_CHILDREN_COUNT % remaining_object_name,
                      cpmeas.COLTYPE_INTEGER),
                     (remaining_object_name, I.FF_PARENT % object_name,

@@ -90,9 +90,7 @@ from cellprofiler.setting import YES, NO
 import itertools
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
 from identify import C_NUMBER, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements
-from identify import add_object_location_measurements
-from identify import get_object_measurement_columns
+import cellprofiler.measurement.region
 from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
 from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
 from untangleworms import read_params
@@ -928,9 +926,9 @@ class StraightenWorms(cpm.Module):
         straightened_objects = cpo.Objects()
         straightened_objects.segmented = labels
         object_set.add_objects(straightened_objects, straightened_objects_name)
-        add_object_count_measurements(m, straightened_objects_name, nworms)
-        add_object_location_measurements(m, straightened_objects_name,
-                                         labels, nworms)
+        cellprofiler.measurement.region.add_object_count_measurements(m, straightened_objects_name, nworms)
+        cellprofiler.measurement.region.add_object_location_measurements(m, straightened_objects_name,
+                                                                         labels, nworms)
 
     def display(self, workspace, figure):
         '''Display the results of the worm straightening'''
@@ -974,7 +972,7 @@ class StraightenWorms(cpm.Module):
 
     def get_measurement_columns(self, pipeline):
         '''Return columns that define the measurements produced by this module'''
-        result = get_object_measurement_columns(self.straightened_objects_name.value)
+        result = cellprofiler.measurement.region.get_object_measurement_columns(self.straightened_objects_name.value)
         if self.wants_measurements:
             nsegments = self.number_of_segments.value
             nstripes = self.number_of_stripes.value
@@ -1015,21 +1013,21 @@ class StraightenWorms(cpm.Module):
     def get_categories(self, pipeline, object_name):
         result = []
         if object_name == cpmeas.IMAGE:
-            result += [C_COUNT]
+            result += [cellprofiler.measurement.region.C_COUNT]
         elif object_name == self.straightened_objects_name:
-            result += [C_LOCATION, C_NUMBER]
+            result += [cellprofiler.measurement.region.C_LOCATION, cellprofiler.measurement.region.C_NUMBER]
         elif object_name == self.objects_name and self.wants_measurements:
             result += [C_WORM]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.region.C_COUNT:
             return [self.straightened_objects_name.value]
         elif object_name == self.straightened_objects_name:
-            if category == C_LOCATION:
-                return [FTR_CENTER_X, FTR_CENTER_Y]
-            elif category == C_NUMBER:
-                return [FTR_OBJECT_NUMBER]
+            if category == cellprofiler.measurement.region.C_LOCATION:
+                return [cellprofiler.measurement.region.FTR_CENTER_X, cellprofiler.measurement.region.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.region.C_NUMBER:
+                return [cellprofiler.measurement.region.FTR_OBJECT_NUMBER]
         elif category == C_WORM and object_name == self.objects_name:
             return [FTR_MEAN_INTENSITY, FTR_STD_INTENSITY]
         return []

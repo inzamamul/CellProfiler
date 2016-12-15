@@ -22,8 +22,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
-from cellprofiler.modules.identify import \
-    C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import cellprofiler.measurement.region
 from tests.modules import \
     example_images_directory, maybe_download_sbs
 
@@ -2334,8 +2333,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m = cpmeas.Measurements()
         m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1] = 1
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
-        m[cpmeas.IMAGE, "_".join((C_COUNT, OBJECTS_NAME)), 1] = 3
-        m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
+        m[cpmeas.IMAGE, "_".join((cellprofiler.measurement.region.C_COUNT, OBJECTS_NAME)), 1] = 3
+        m[OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_X, 1] = np.array([1, 4, 9], float)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
@@ -2354,13 +2353,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             d = {}
             for index, column in enumerate(header):
                 d[column] = index
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_X))
-            self.assertTrue(d.has_key(M_LOCATION_CENTER_Y))
+            self.assertTrue(d.has_key(cellprofiler.measurement.region.M_LOCATION_CENTER_X))
+            self.assertTrue(d.has_key(cellprofiler.measurement.region.M_LOCATION_CENTER_Y))
             for i in range(3):
                 row = reader.next()
-                x = row[d[M_LOCATION_CENTER_X]]
+                x = row[d[cellprofiler.measurement.region.M_LOCATION_CENTER_X]]
                 self.assertEqual(float(x), (i + 1) ** 2)
-                y = row[d[M_LOCATION_CENTER_Y]]
+                y = row[d[cellprofiler.measurement.region.M_LOCATION_CENTER_Y]]
                 self.assertEqual(y.lower(), "nan")
             self.assertRaises(StopIteration, reader.next)
         finally:

@@ -14,6 +14,8 @@ import uuid
 import zlib
 import socket
 
+import cellprofiler.measurement.region
+
 if hasattr(unittest, "SkipTest"):
     SkipTestException = unittest.SkipTest
 else:
@@ -1665,11 +1667,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                            (cpmeas.IMAGE, STRING_IMG_MEASUREMENT,
                             cpmeas.COLTYPE_VARCHAR_FORMAT % 40),
                            (cpmeas.IMAGE, OBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                           (OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                           (OBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                            (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
                 if self.in_module(alt_object):
                     columns += [(cpmeas.IMAGE, ALTOBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
-                                (ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                                (ALTOBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                                 (ALTOBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
                 if self.in_module(long_measurement):
                     columns += [(cpmeas.IMAGE, LONG_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
@@ -1701,7 +1703,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 return []
 
             def get_categories(self, pipeline, object_name):
-                return ([M_CATEGORY, I.C_NUMBER]
+                return ([M_CATEGORY, cellprofiler.measurement.region.C_NUMBER]
                         if (object_name == OBJECT_NAME or
                             ((object_name == ALTOBJECT_NAME) and
                              self.in_module(alt_object)))
@@ -1723,8 +1725,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                 [LONG_IMG_FEATURE] if self.in_module(long_measurement)
                                 else [WIERD_IMG_FEATURE] if self.in_module(wierd_measurement)
                         else [])
-                elif category == I.C_NUMBER and object_name in (OBJECT_NAME, ALTOBJECT_NAME):
-                    return I.FTR_OBJECT_NUMBER
+                elif category == cellprofiler.measurement.region.C_NUMBER and object_name in (OBJECT_NAME, ALTOBJECT_NAME):
+                    return cellprofiler.measurement.region.FTR_OBJECT_NUMBER
                 elif category == "Count" and object_name == cpmeas.IMAGE:
                     result = [OBJECT_NAME]
                     if self.in_module(alt_object):
@@ -1744,11 +1746,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
             m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
             m.add_image_measurement(OBJECT_COUNT_MEASUREMENT, len(OBJ_VALUE))
-            m.add_measurement(OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+            m.add_measurement(OBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER,
                               np.arange(len(OBJ_VALUE)) + 1)
             m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
             if TestModule.in_measurements(alt_object):
-                m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                m.add_measurement(ALTOBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER,
                                   np.arange(100) + 1)
                 m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
                 m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
@@ -2023,7 +2025,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
-                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          OBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER,
                           module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2091,9 +2093,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                          "%s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber" %
                          (OBJECT_NAME, OBJ_MEASUREMENT,
-                          OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          OBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER,
                           ALTOBJECT_NAME, OBJ_MEASUREMENT,
-                          ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
+                          ALTOBJECT_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER,
                           module.table_prefix.value))
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2983,9 +2985,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                                   for field in fields])
         statement = ("select ImageNumber, %s_%s, %s "
                      "from %sPer_%s order by ImageNumber, %s_%s" %
-                     (object_name, I.M_NUMBER_OBJECT_NUMBER, field_string,
+                     (object_name, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, field_string,
                       module.table_prefix.value, object_name, object_name,
-                      I.M_NUMBER_OBJECT_NUMBER))
+                      cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER))
         return statement
 
     def check_experiment_table(self, cursor, module, m):

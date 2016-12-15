@@ -44,9 +44,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+import cellprofiler.measurement.region
 from cellprofiler.setting import YES, NO
 
 O_SHRINK_INF = 'Shrink objects to a point'
@@ -158,10 +156,10 @@ class ExpandOrShrinkObjects(cpm.Module):
                 self.do_labels(input_objects.unedited_segmented)
         workspace.object_set.add_objects(output_objects,
                                          self.output_object_name.value)
-        add_object_count_measurements(workspace.measurements,
-                                      self.output_object_name.value,
-                                      np.max(output_objects.segmented))
-        add_object_location_measurements(workspace.measurements,
+        cellprofiler.measurement.region.add_object_count_measurements(workspace.measurements,
+                                                                      self.output_object_name.value,
+                                                                      np.max(output_objects.segmented))
+        cellprofiler.measurement.region.add_object_location_measurements(workspace.measurements,
                                          self.output_object_name.value,
                                          output_objects.segmented)
         if self.wants_outlines.value:
@@ -245,7 +243,7 @@ class ExpandOrShrinkObjects(cpm.Module):
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
-        columns = get_object_measurement_columns(self.output_object_name.value)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(self.output_object_name.value)
         return columns
 
     def get_categories(self, pipeline, object_name):

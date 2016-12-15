@@ -11,6 +11,8 @@ from StringIO import StringIO
 
 import numpy as np
 from bioformats import write_image, PT_UINT8
+
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -639,10 +641,10 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
             (cpmeas.IMAGE, L.C_OBJECTS_URL + "_" + OBJECTS_NAME),
             (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
             (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-            (cpmeas.IMAGE, L.I.C_COUNT + "_" + OBJECTS_NAME),
-            (OBJECTS_NAME, L.I.M_LOCATION_CENTER_X),
-            (OBJECTS_NAME, L.I.M_LOCATION_CENTER_Y),
-            (OBJECTS_NAME, L.I.M_NUMBER_OBJECT_NUMBER))
+            (cpmeas.IMAGE, cellprofiler.measurement.region.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_X),
+            (OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_Y),
+            (OBJECTS_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER))
         for column in columns:
             self.assertTrue(any([
                                     True for object_name, feature in expected_columns
@@ -805,10 +807,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             objects = object_set.get_objects(OBJECTS_NAME)
             self.assertTrue(np.all(objects.segmented == labels))
             self.assertEqual(measurements.get_current_image_measurement(
-                    L.I.FF_COUNT % OBJECTS_NAME), 9)
-            for feature in (L.I.M_LOCATION_CENTER_X,
-                            L.I.M_LOCATION_CENTER_Y,
-                            L.I.M_NUMBER_OBJECT_NUMBER):
+                cellprofiler.measurement.region.FF_COUNT % OBJECTS_NAME), 9)
+            for feature in (cellprofiler.measurement.region.M_LOCATION_CENTER_X,
+                            cellprofiler.measurement.region.M_LOCATION_CENTER_Y,
+                            cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER):
                 value = measurements.get_current_measurement(
                         OBJECTS_NAME, feature)
                 self.assertEqual(len(value), 9)

@@ -8,6 +8,7 @@ from StringIO import StringIO
 
 import numpy as np
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -159,10 +160,10 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
 
         columns = module.get_measurement_columns(None)
         expected_columns = [
-            (cpmeas.IMAGE, E.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
-            (OUTPUT_OBJECTS_NAME, E.I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-            (OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+            (cpmeas.IMAGE, cellprofiler.measurement.region.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+            (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
             (OUTPUT_OBJECTS_NAME, E.I.FF_PARENT % INPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
             (INPUT_OBJECTS_NAME, E.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)]
 
@@ -182,14 +183,15 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         #
         # Check the measurement features
         #
-        d = {cpmeas.IMAGE: {E.I.C_COUNT: [OUTPUT_OBJECTS_NAME],
+        d = {cpmeas.IMAGE: {cellprofiler.measurement.region.C_COUNT: [OUTPUT_OBJECTS_NAME],
                             "Foo": []},
              INPUT_OBJECTS_NAME: {E.I.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
                                   "Foo": []},
              OUTPUT_OBJECTS_NAME: {
-                 E.I.C_LOCATION: [E.I.FTR_CENTER_X, E.I.FTR_CENTER_Y],
+                 cellprofiler.measurement.region.C_LOCATION: [cellprofiler.measurement.region.FTR_CENTER_X,
+                                                              cellprofiler.measurement.region.FTR_CENTER_Y],
                  E.I.C_PARENT: [INPUT_OBJECTS_NAME],
-                 E.I.C_NUMBER: [E.I.FTR_OBJECT_NUMBER],
+                 cellprofiler.measurement.region.C_NUMBER: [cellprofiler.measurement.region.FTR_OBJECT_NUMBER],
                  "Foo": []},
              "Foo": {}
              }

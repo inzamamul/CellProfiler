@@ -1,5 +1,6 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+import cellprofiler.measurement.region
+from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES, PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = '''
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
@@ -428,7 +429,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             threshold. These pixels are used as the seeds for objects in the watershed.
             Note that this method can occasionally result in strange artifacts; diagonal
             invaginations that do not seem to match any intensity dip in the input image.
-            More information can be found 
+            More information can be found
             <a href="https://github.com/CellProfiler/CellProfiler/issues/1156">here</a></li>
             <li><i>%(UN_NONE)s:</i> If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
@@ -980,8 +981,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         # Add image measurements
         objname = self.object_name.value
         measurements = workspace.measurements
-        cpmi.add_object_count_measurements(measurements,
-                                           objname, object_count)
+        cellprofiler.measurement.region.add_object_count_measurements(measurements,
+                                                                      objname, object_count)
         # Add label matrices to the object set
         objects = cellprofiler.object.Objects()
         objects.segmented = labeled_image
@@ -990,9 +991,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         objects.parent_image = image
 
         workspace.object_set.add_objects(objects, self.object_name.value)
-        cpmi.add_object_location_measurements(workspace.measurements,
-                                              self.object_name.value,
-                                              labeled_image)
+        cellprofiler.measurement.region.add_object_location_measurements(workspace.measurements,
+                                                                         self.object_name.value,
+                                                                         labeled_image)
         if self.should_save_outlines.value:
             out_img = cpi.Image(outline_image.astype(bool),
                                 parent_image=image)
@@ -1401,7 +1402,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
-        columns = cpmi.get_object_measurement_columns(self.object_name.value)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns
 

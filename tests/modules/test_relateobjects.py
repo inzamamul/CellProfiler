@@ -9,6 +9,7 @@ from StringIO import StringIO
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -590,8 +591,8 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertTrue(any([c[0] == PARENT_OBJECTS and c[1] == feat_mean
                              for c in mcolumns]))
         m = workspace.measurements
-        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_X, 1] = child_centers[1]
-        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_Y, 1] = child_centers[0]
+        m[CHILD_OBJECTS, cellprofiler.measurement.region.M_LOCATION_CENTER_X, 1] = child_centers[1]
+        m[CHILD_OBJECTS, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, 1] = child_centers[0]
         module.run(workspace)
 
         v = m[PARENT_OBJECTS, feat_mean, 1]

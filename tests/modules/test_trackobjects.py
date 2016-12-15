@@ -12,6 +12,7 @@ import numpy as np
 import scipy.ndimage
 from matplotlib.image import pil_to_array
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -25,7 +26,7 @@ import cellprofiler.workspace as cpw
 from centrosome.filter import permutations
 
 import cellprofiler.modules.trackobjects as T
-from cellprofiler.modules.identify import C_COUNT
+import cellprofiler.measurement.region
 
 OBJECT_NAME = "objects"
 
@@ -1094,8 +1095,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     (1, module.measurement_name(T.F_LABEL), int),
                     (2, module.measurement_name(T.F_PARENT_IMAGE_NUMBER), int),
                     (3, module.measurement_name(T.F_PARENT_OBJECT_NUMBER), int),
-                    (4, T.M_LOCATION_CENTER_X, float),
-                    (5, T.M_LOCATION_CENTER_Y, float),
+                    (4, cellprofiler.measurement.region.M_LOCATION_CENTER_X, float),
+                    (5, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, float),
                     (6, module.measurement_name(T.F_AREA), float)):
                 values = objs[objs[:, 0] == i, index].astype(dtype)
                 m.add_measurement(OBJECT_NAME, feature, values, i + 1)
@@ -1107,7 +1108,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             #
             # Add blanks of the right sizes for measurements that are recalculated
             #
-            m.add_measurement(cpmeas.IMAGE, '_'.join((C_COUNT, OBJECT_NAME)),
+            m.add_measurement(cpmeas.IMAGE, '_'.join((cellprofiler.measurement.region.C_COUNT, OBJECT_NAME)),
                               nobjects[i], i + 1)
             for feature in (T.F_DISTANCE_TRAVELED, T.F_DISPLACEMENT,
                             T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,

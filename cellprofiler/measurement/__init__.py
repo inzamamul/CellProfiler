@@ -1577,8 +1577,8 @@ class Measurements(object):
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from .modules.loadimages import LoadImagesImageProviderURL
-        from .image import GrayscaleImage, RGBImage
+        from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
+        from cellprofiler.image import GrayscaleImage, RGBImage
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1704,7 +1704,7 @@ class Measurements(object):
     names = property(get_names)
 
     def add(self, name, image):
-        from .image import VanillaImageProvider
+        from cellprofiler.image import VanillaImageProvider
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
         if len(old_providers) > 0:

@@ -1599,9 +1599,7 @@ class NamesAndTypes(cpm.Module):
         outlines_name - the name of the outlines image in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
         '''
-        from cellprofiler.modules.identify import add_object_count_measurements
-        from cellprofiler.modules.identify import add_object_location_measurements
-        from cellprofiler.modules.identify import add_object_location_measurements_ijv
+        import cellprofiler.measurement.region
 
         num_dimensions = J.call(stack, "numDimensions", "()I")
         if num_dimensions == 2:
@@ -1647,7 +1645,7 @@ class NamesAndTypes(cpm.Module):
         o = cpo.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
-            add_object_location_measurements(workspace.measurements,
+            cellprofiler.measurement.region.add_object_location_measurements(workspace.measurements,
                                              name,
                                              o.segmented,
                                              o.count)
@@ -1661,9 +1659,9 @@ class NamesAndTypes(cpm.Module):
                         (ijv,
                          np.column_stack([x[plane != 0] for x in (i, j, plane)])))
             o.set_ijv(ijv, shape)
-            add_object_location_measurements_ijv(workspace.measurements,
+            cellprofiler.measurement.region.add_object_location_measurements_ijv(workspace.measurements,
                                                  name, o.ijv, o.count)
-        add_object_count_measurements(workspace.measurements, name, o.count)
+        cellprofiler.measurement.region.add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
         if should_save_outlines:
             outline_image = np.zeros(image.pixel_data.shape[:2], bool)
@@ -1736,9 +1734,7 @@ class NamesAndTypes(cpm.Module):
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
         from cellprofiler.measurement import \
             C_OBJECTS_SERIES, C_OBJECTS_FRAME
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
-            get_object_measurement_columns
+        import cellprofiler.measurement.region
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()
@@ -1766,14 +1762,14 @@ class NamesAndTypes(cpm.Module):
                            (C_OBJECTS_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
                            (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                            (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-                           (C_COUNT, cpmeas.COLTYPE_INTEGER),
+                           (cellprofiler.measurement.region.C_COUNT, cpmeas.COLTYPE_INTEGER),
                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
                            (C_WIDTH, cpmeas.COLTYPE_INTEGER),
                            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
                            (C_OBJECTS_SERIES, cpmeas.COLTYPE_INTEGER),
                            (C_OBJECTS_FRAME, cpmeas.COLTYPE_INTEGER)
                        )]
-            result += get_object_measurement_columns(object_name)
+            result += cellprofiler.measurement.region.get_object_measurement_columns(object_name)
         result += [(cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR)
                    for ftr in self.get_metadata_features()]
 
@@ -1784,7 +1780,8 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER, C_COUNT
+        import cellprofiler.measurement.region
+
         result = []
         if object_name == cpmeas.IMAGE:
             has_images = any(self.get_image_names())
@@ -1793,11 +1790,11 @@ class NamesAndTypes(cpm.Module):
                 result += [C_FILE_NAME, C_PATH_NAME, C_URL]
             if has_objects:
                 result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
-                           C_OBJECTS_URL, C_COUNT]
+                           C_OBJECTS_URL, cellprofiler.measurement.region.C_COUNT]
             result += [C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, C_SERIES,
                        C_FRAME]
         elif object_name in self.get_object_names():
-            result += [C_LOCATION, C_NUMBER]
+            result += [cellprofiler.measurement.region.C_LOCATION, cellprofiler.measurement.region.C_NUMBER]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
@@ -1805,8 +1802,7 @@ class NamesAndTypes(cpm.Module):
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y
+        import cellprofiler.measurement.region
 
         image_names = self.get_image_names()
         object_names = self.get_object_names()
@@ -1816,16 +1812,16 @@ class NamesAndTypes(cpm.Module):
             elif category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
                               C_OBJECTS_URL):
                 return object_names
-            elif category == C_COUNT:
+            elif category == cellprofiler.measurement.region.C_COUNT:
                 return object_names
             elif category in (C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH,
                               C_SERIES, C_FRAME):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
-            if category == C_NUMBER:
-                return [FTR_OBJECT_NUMBER]
-            elif category == C_LOCATION:
-                return [FTR_CENTER_X, FTR_CENTER_Y]
+            if category == cellprofiler.measurement.region.C_NUMBER:
+                return [cellprofiler.measurement.region.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.measurement.region.C_LOCATION:
+                return [cellprofiler.measurement.region.FTR_CENTER_X, cellprofiler.measurement.region.FTR_CENTER_Y]
         return []
 
     def validate_module(self, pipeline):

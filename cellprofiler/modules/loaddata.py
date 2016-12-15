@@ -158,6 +158,8 @@ import sys
 
 import numpy as np
 
+import cellprofiler.measurement.region
+
 logger = logging.getLogger(__name__)
 try:
     from cStringIO import StringIO
@@ -1111,8 +1113,8 @@ class LoadData(cpm.Module):
                 o = cpo.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
-                I.add_object_count_measurements(m, objects_name, o.count)
-                I.add_object_location_measurements(m, objects_name, pixel_data)
+                cellprofiler.measurement.region.add_object_count_measurements(m, objects_name, o.count)
+                cellprofiler.measurement.region.add_object_location_measurements(m, objects_name, pixel_data)
 
         for feature_name in sorted(features):
             value = m.get_measurement(cpmeas.IMAGE, feature_name)
@@ -1248,7 +1250,7 @@ class LoadData(cpm.Module):
             # Add the object features
             #
             for object_name in self.get_object_names():
-                result += I.get_object_measurement_columns(object_name)
+                result += cellprofiler.measurement.region.get_object_measurement_columns(object_name)
                 for feature, coltype in (
                         (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                         (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),

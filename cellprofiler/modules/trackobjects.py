@@ -188,7 +188,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import cellprofiler.measurement.region
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
@@ -1486,8 +1486,8 @@ class TrackObjects(cpm.Module):
             for feature, mtype in (
                 (self.measurement_name(F_LABEL), int),
                 (cpmeas.OBJECT_NUMBER, int),
-                (M_LOCATION_CENTER_X, float),
-                (M_LOCATION_CENTER_Y, float),
+                (cellprofiler.measurement.region.M_LOCATION_CENTER_X, float),
+                (cellprofiler.measurement.region.M_LOCATION_CENTER_Y, float),
                 (self.measurement_name(F_AREA), float),
                 (self.measurement_name(F_PARENT_OBJECT_NUMBER), int),
                 (self.measurement_name(F_PARENT_IMAGE_NUMBER), int)
@@ -2556,8 +2556,8 @@ class TrackObjects(cpm.Module):
         #
         # Recalculate the trajectories
         #
-        x = wrapped(M_LOCATION_CENTER_X)
-        y = wrapped(M_LOCATION_CENTER_Y)
+        x = wrapped(cellprofiler.measurement.region.M_LOCATION_CENTER_X)
+        y = wrapped(cellprofiler.measurement.region.M_LOCATION_CENTER_Y)
         trajectory_x = wrapped(self.measurement_name(F_TRAJECTORY_X))
         trajectory_y = wrapped(self.measurement_name(F_TRAJECTORY_Y))
         integrated = wrapped(self.measurement_name(F_INTEGRATED_DISTANCE))
@@ -2814,14 +2814,14 @@ class TrackObjects(cpm.Module):
         # parent_y = y[idx.fwd_idx[image_number - fi] + object_number - 1]
         #
         # #######################
-        x = m[object_name, M_LOCATION_CENTER_X, image_numbers]
+        x = m[object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_X, image_numbers]
         fi = np.min(image_numbers)
         max_image = np.max(image_numbers) + 1
         counts = np.zeros(max_image - fi, int)
         counts[image_numbers - fi] = np.array([len(xx) for xx in x])
         idx = Indexes(counts)
         x = np.hstack(x)
-        y = np.hstack(m[object_name, M_LOCATION_CENTER_Y, image_numbers])
+        y = np.hstack(m[object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, image_numbers])
         area = np.hstack(
                 m[object_name,
                   self.measurement_name(F_AREA),

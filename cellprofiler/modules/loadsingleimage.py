@@ -59,8 +59,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
 from cellprofiler.setting import YES, NO
 from identify import C_COUNT, C_LOCATION, C_NUMBER
 from identify import FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
-from identify import add_object_count_measurements, add_object_location_measurements
-from identify import get_object_measurement_columns
+import cellprofiler.measurement.region
 from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
 from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
 from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
@@ -414,8 +413,8 @@ class LoadSingleImage(cpm.Module):
                 object_set = workspace.object_set
                 assert isinstance(object_set, cpo.ObjectSet)
                 object_set.add_objects(objects, image_name)
-                add_object_count_measurements(m, image_name, objects.count)
-                add_object_location_measurements(m, image_name, labels)
+                cellprofiler.measurement.region.add_object_count_measurements(m, image_name, objects.count)
+                cellprofiler.measurement.region.add_object_location_measurements(m, image_name, labels)
                 #
                 # Add outlines if appropriate
                 #
@@ -455,7 +454,7 @@ class LoadSingleImage(cpm.Module):
                 image_name = file_setting.objects_name.value
                 path_name_category = C_OBJECTS_PATH_NAME
                 file_name_category = C_OBJECTS_FILE_NAME
-                columns += get_object_measurement_columns(image_name)
+                columns += cellprofiler.measurement.region.get_object_measurement_columns(image_name)
 
             columns += [(cpmeas.IMAGE, '_'.join((feature, image_name)), coltype)
                         for feature, coltype in (
@@ -482,11 +481,11 @@ class LoadSingleImage(cpm.Module):
             if self.wants_images:
                 result += [C_FILE_NAME, C_MD5_DIGEST, C_PATH_NAME, C_SCALING, C_HEIGHT, C_WIDTH]
             if self.wants_objects:
-                result += [C_COUNT, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
+                result += [cellprofiler.measurement.region.C_COUNT, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
         if any([True for file_setting in self.file_settings
                 if file_setting.image_objects_choice == IO_OBJECTS and
                                 object_name == file_setting.objects_name]):
-            result += [C_LOCATION, C_NUMBER]
+            result += [cellprofiler.measurement.region.C_LOCATION, cellprofiler.measurement.region.C_NUMBER]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
@@ -501,17 +500,17 @@ class LoadSingleImage(cpm.Module):
                 result += [file_setting.image_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == IO_IMAGES]
-            if category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_COUNT):
+            if category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, cellprofiler.measurement.region.C_COUNT):
                 result += [file_setting.objects_name.value
                            for file_setting in self.file_settings
                            if file_setting.image_objects_choice == IO_OBJECTS]
         elif any([file_setting.image_objects_choice == IO_OBJECTS and
                                   file_setting.objects_name == object_name
                   for file_setting in self.file_settings]):
-            if category == C_NUMBER:
-                result += [FTR_OBJECT_NUMBER]
-            elif category == C_LOCATION:
-                result += [FTR_CENTER_X, FTR_CENTER_Y]
+            if category == cellprofiler.measurement.region.C_NUMBER:
+                result += [cellprofiler.measurement.region.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler.measurement.region.C_LOCATION:
+                result += [cellprofiler.measurement.region.FTR_CENTER_X, cellprofiler.measurement.region.FTR_CENTER_Y]
         return result
 
     def validate_module(self, pipeline):

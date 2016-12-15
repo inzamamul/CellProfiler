@@ -1,4 +1,5 @@
 import cellprofiler.icons
+import cellprofiler.measurement.region
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
@@ -672,9 +673,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         # Add measurements
         #
         measurements = workspace.measurements
-        cpmi.add_object_count_measurements(measurements, objname, object_count)
-        cpmi.add_object_location_measurements(measurements, objname,
-                                              segmented_out)
+        cellprofiler.measurement.region.add_object_count_measurements(measurements, objname, object_count)
+        cellprofiler.measurement.region.add_object_location_measurements(measurements, objname,
+                                                                         segmented_out)
         #
         # Relate the secondary objects to the primary ones and record
         # the relationship.
@@ -702,12 +703,12 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if self.wants_discard_edge and self.wants_discard_primary:
             workspace.object_set.add_objects(new_objects,
                                              self.new_primary_objects_name.value)
-            cpmi.add_object_count_measurements(measurements,
-                                               self.new_primary_objects_name.value,
-                                               np.max(new_objects.segmented))
-            cpmi.add_object_location_measurements(measurements,
-                                                  self.new_primary_objects_name.value,
-                                                  new_objects.segmented)
+            cellprofiler.measurement.region.add_object_count_measurements(measurements,
+                                                                          self.new_primary_objects_name.value,
+                                                                          np.max(new_objects.segmented))
+            cellprofiler.measurement.region.add_object_location_measurements(measurements,
+                                                                             self.new_primary_objects_name.value,
+                                                                             new_objects.segmented)
             for parent_objects, parent_name, child_objects, child_name in (
                     (objects, self.primary_objects.value,
                      new_objects, self.new_primary_objects_name.value),
@@ -836,7 +837,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
-        columns = cpmi.get_object_measurement_columns(self.objects_name.value)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
                      cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
                      cpmeas.COLTYPE_INTEGER),
@@ -846,7 +847,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         if self.method != M_DISTANCE_N:
             columns += cpmi.get_threshold_measurement_columns(self.objects_name.value)
         if self.wants_discard_edge and self.wants_discard_primary:
-            columns += cpmi.get_object_measurement_columns(self.new_primary_objects_name.value)
+            columns += cellprofiler.measurement.region.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,
                          cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
                          cpmeas.COLTYPE_INTEGER),

@@ -1,4 +1,4 @@
-'''<b>Identify Objects Manually</b> allows you to identify objects 
+'''<b>Identify Objects Manually</b> allows you to identify objects
 in an image by hand rather than automatically.
 <hr>
 This module lets you outline the objects in an image using the mouse. The
@@ -19,6 +19,7 @@ from centrosome.cpmorphology import fill_labeled_holes
 from centrosome.outline import outline
 
 import cellprofiler.image as cpi
+import cellprofiler.measurement.region
 import cellprofiler.module as cpm
 import cellprofiler.object as cpo
 import cellprofiler.preferences as cpprefs
@@ -98,11 +99,11 @@ class IdentifyObjectsManually(I.Identify):
         # The object count
         #
         object_count = np.max(labels)
-        I.add_object_count_measurements(m, objects_name, object_count)
+        cellprofiler.measurement.region.add_object_count_measurements(m, objects_name, object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements(m, objects_name, labels)
+        cellprofiler.measurement.region.add_object_location_measurements(m, objects_name, labels)
         #
         # Outlines if we want them
         #
@@ -204,7 +205,7 @@ class IdentifyObjectsManually(I.Identify):
 
         Return a list of tuples of object name, measurement name and data type
         '''
-        result = I.get_object_measurement_columns(self.objects_name.value)
+        result = cellprofiler.measurement.region.get_object_measurement_columns(self.objects_name.value)
         return result
 
     @property

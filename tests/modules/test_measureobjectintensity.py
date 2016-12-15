@@ -9,6 +9,7 @@ from StringIO import StringIO
 
 import numpy as np
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -105,11 +106,11 @@ class TestMeasureObjects(unittest.TestCase):
         moi.objects[1].name.value = 'MyObjects2'
 
         self.assertEqual(tuple(sorted(moi.get_categories(None, 'MyObjects1'))),
-                         tuple(sorted([MOI.INTENSITY, MOI.C_LOCATION])))
+                         tuple(sorted([MOI.INTENSITY, cellprofiler.measurement.region.C_LOCATION])))
         self.assertEqual(moi.get_categories(None, 'Foo'), [])
         measurements = moi.get_measurements(None, 'MyObjects1', MOI.INTENSITY)
         self.assertEqual(len(measurements), len(MOI.ALL_MEASUREMENTS))
-        measurements = moi.get_measurements(None, 'MyObjects1', MOI.C_LOCATION)
+        measurements = moi.get_measurements(None, 'MyObjects1', cellprofiler.measurement.region.C_LOCATION)
         self.assertEqual(len(measurements), len(MOI.ALL_LOCATION_MEASUREMENTS))
         self.assertTrue(all([m in MOI.ALL_LOCATION_MEASUREMENTS for m in measurements]))
         self.assertTrue(moi.get_measurement_images(None, 'MyObjects1',
@@ -130,7 +131,7 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertTrue(column[0] in ('MyObjects1', 'MyObjects2'))
             self.assertEqual(column[2], cpmeas.COLTYPE_FLOAT)
             category = column[1].split('_')[0]
-            self.assertTrue(category in (MOI.INTENSITY, MOI.C_LOCATION))
+            self.assertTrue(category in (MOI.INTENSITY, cellprofiler.measurement.region.C_LOCATION))
             if category == MOI.INTENSITY:
                 self.assertTrue(column[1][column[1].find('_') + 1:] in
                                 [m + '_MyImage' for m in MOI.ALL_MEASUREMENTS])
@@ -191,7 +192,7 @@ class TestMeasureObjects(unittest.TestCase):
         pipeline.add_module(moi)
         m = pipeline.run()
         for category, features in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
-                                   (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+                                   (cellprofiler.measurement.region.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
             for meas_name in features:
                 feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
                 data = m.get_current_measurement('MyObjects', feature_name)
@@ -261,8 +262,8 @@ class TestMeasureObjects(unittest.TestCase):
                 (MOI.INTENSITY, MOI.LOWER_QUARTILE_INTENSITY, 1),
                 (MOI.INTENSITY, MOI.MEDIAN_INTENSITY, 1),
                 (MOI.INTENSITY, MOI.UPPER_QUARTILE_INTENSITY, 1),
-                (MOI.C_LOCATION, MOI.LOC_CMI_X, 3),
-                (MOI.C_LOCATION, MOI.LOC_CMI_Y, 2)):
+                (cellprofiler.measurement.region.C_LOCATION, MOI.LOC_CMI_X, 3),
+                (cellprofiler.measurement.region.C_LOCATION, MOI.LOC_CMI_Y, 2)):
             feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
             data = m.get_current_measurement('MyObjects', feature_name)
             self.assertEqual(np.product(data.shape), 1)
@@ -324,7 +325,7 @@ class TestMeasureObjects(unittest.TestCase):
         module.run(workspace)
         for feature, value in ((MOI.LOC_MAX_X, 5),
                                (MOI.LOC_MAX_Y, 2)):
-            feature_name = "%s_%s_%s" % (MOI.C_LOCATION, feature, 'MyImage')
+            feature_name = "%s_%s_%s" % (cellprofiler.measurement.region.C_LOCATION, feature, 'MyImage')
             values = workspace.measurements.get_current_measurement(
                     OBJECT_NAME, feature_name)
             self.assertEqual(len(values), 1)
@@ -631,7 +632,7 @@ class TestMeasureObjects(unittest.TestCase):
             measurements1 = workspace.measurements
             assert isinstance(measurements1, cpmeas.Measurements)
             for cname, fnames in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
-                                  (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+                                  (cellprofiler.measurement.region.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
                 for fname in fnames:
                     mname = "_".join([cname, fname, IMAGE_NAME])
                     m0 = measurements0.get_measurement(OBJECT_NAME, mname)

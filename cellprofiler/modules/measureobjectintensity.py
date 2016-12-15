@@ -1,4 +1,4 @@
-"""<b>Measure Object Intensity</b> measures several intensity features for 
+"""<b>Measure Object Intensity</b> measures several intensity features for
 identified objects.
 <hr>
 Given an image with objects identified (e.g. nuclei or cells), this
@@ -67,7 +67,7 @@ import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
 import cellprofiler.setting as cps
-from identify import C_LOCATION
+import cellprofiler.measurement.region
 
 INTENSITY = 'Intensity'
 INTEGRATED_INTENSITY = 'IntegratedIntensity'
@@ -252,7 +252,7 @@ class MeasureObjectIntensity(cpm.Module):
             for object_name in [obj.name for obj in self.objects]:
                 for category, features in (
                         (INTENSITY, ALL_MEASUREMENTS),
-                        (C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
+                        (cellprofiler.measurement.region.C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
                     for feature in features:
                         columns.append((object_name.value,
                                         "%s_%s_%s" % (category, feature,
@@ -270,12 +270,12 @@ class MeasureObjectIntensity(cpm.Module):
         """
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
-                return [INTENSITY, C_LOCATION]
+                return [INTENSITY, cellprofiler.measurement.region.C_LOCATION]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
-        if category == C_LOCATION:
+        if category == cellprofiler.measurement.region.C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
         elif category == INTENSITY:
             all_measurements = ALL_MEASUREMENTS
@@ -291,7 +291,7 @@ class MeasureObjectIntensity(cpm.Module):
         if category == INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []
-        elif category == C_LOCATION:
+        elif category == cellprofiler.measurement.region.C_LOCATION:
             if measurement not in ALL_LOCATION_MEASUREMENTS:
                 return []
         else:
@@ -475,10 +475,10 @@ class MeasureObjectIntensity(cpm.Module):
                          (INTENSITY, MEDIAN_INTENSITY, median_intensity),
                          (INTENSITY, MAD_INTENSITY, mad_intensity),
                          (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                         (C_LOCATION, LOC_CMI_X, cmi_x),
-                         (C_LOCATION, LOC_CMI_Y, cmi_y),
-                         (C_LOCATION, LOC_MAX_X, max_x),
-                         (C_LOCATION, LOC_MAX_Y, max_y)):
+                         (cellprofiler.measurement.region.C_LOCATION, LOC_CMI_X, cmi_x),
+                         (cellprofiler.measurement.region.C_LOCATION, LOC_CMI_Y, cmi_y),
+                         (cellprofiler.measurement.region.C_LOCATION, LOC_MAX_X, max_x),
+                         (cellprofiler.measurement.region.C_LOCATION, LOC_MAX_Y, max_y)):
                     measurement_name = "%s_%s_%s" % (category, feature_name,
                                                      image_name.value)
                     m.add_measurement(object_name.value, measurement_name,

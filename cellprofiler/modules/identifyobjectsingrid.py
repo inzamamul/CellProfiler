@@ -1,4 +1,4 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
+'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
 This module identifies objects that are contained within in a grid pattern, allowing
@@ -50,9 +50,7 @@ import cellprofiler.object as cpo
 import cellprofiler.setting as cps
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+import cellprofiler.measurement.region
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
@@ -214,12 +212,12 @@ class IdentifyObjectsInGrid(cpm.Module):
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects,
                                          self.output_objects_name.value)
-        add_object_location_measurements(workspace.measurements,
-                                         self.output_objects_name.value,
-                                         labels, object_count)
-        add_object_count_measurements(workspace.measurements,
-                                      self.output_objects_name.value,
-                                      object_count)
+        cellprofiler.measurement.region.add_object_location_measurements(workspace.measurements,
+                                                                         self.output_objects_name.value,
+                                                                         labels, object_count)
+        cellprofiler.measurement.region.add_object_count_measurements(workspace.measurements,
+                                                                      self.output_objects_name.value,
+                                                                      object_count)
         if self.wants_outlines:
             outlines = outline(labels != 0)
             outline_image = cpi.Image(outlines)
@@ -479,7 +477,7 @@ class IdentifyObjectsInGrid(cpm.Module):
 
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimaryObjects'''
-        return get_object_measurement_columns(self.output_objects_name.value)
+        return cellprofiler.measurement.region.get_object_measurement_columns(self.output_objects_name.value)
 
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces

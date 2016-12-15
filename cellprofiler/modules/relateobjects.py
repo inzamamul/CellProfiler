@@ -44,8 +44,7 @@ import cellprofiler.measurement as cpmeas
 import cellprofiler.setting as cps
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
-from cellprofiler.modules.identify import \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
+import cellprofiler.measurement.region
 from cellprofiler.setting import YES, NO
 
 D_NONE = "None"
@@ -485,7 +484,7 @@ class RelateObjects(cpm.Module):
                              (primary_parent, parent_name))
         return parents_of
 
-    ignore_features = set(M_NUMBER_OBJECT_NUMBER)
+    ignore_features = set(cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
         '''Return True if aggregate measurements should be made on a feature

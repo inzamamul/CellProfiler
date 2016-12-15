@@ -1,27 +1,22 @@
 """identify.py - a base class for common functionality for identify modules
 """
 
-import math
-
-import centrosome.outline
 import numpy as np
 import scipy.ndimage
 import scipy.sparse
 import scipy.stats
 from centrosome.smooth import smooth_with_function_and_mask
-from centrosome.smooth import smooth_with_noise
 from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
 from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
-from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, \
-    TM_RIDLER_CALVARD
+from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_ROBUST_BACKGROUND, TM_BACKGROUND, TM_RIDLER_CALVARD, TM_KAPUR
 from centrosome.threshold import mad, binned_mode
 from centrosome.threshold import weighted_variance, sum_of_entropies
 
-import cellprofiler.module
-import cellprofiler.icons
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object
 import cellprofiler.setting as cps
+import cellprofiler.module
+from cellprofiler.measurement.region import C_LOCATION, C_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER, C_COUNT
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 O_TWO_CLASS = 'Two classes'
@@ -44,15 +39,6 @@ RB_MODE = "Mode"
 RB_SD = "Standard deviation"
 RB_MAD = "Median absolute deviation"
 
-'''The location measurement category'''
-C_LOCATION = "Location"
-
-'''The number category (e.g. Number_Object_Number)'''
-C_NUMBER = "Number"
-
-'''The count category (e.g. Count_Nuclei)'''
-C_COUNT = "Count"
-
 '''The threshold category (e.g. Threshold_FinalThreshold_DNA)'''
 C_THRESHOLD = "Threshold"
 
@@ -67,21 +53,6 @@ C_CHILDREN = "Children"
 
 '''The child relationship'''
 R_CHILD = "Child"
-
-FTR_CENTER_X = "Center_X"
-'''The centroid X coordinate measurement feature name'''
-M_LOCATION_CENTER_X = '%s_%s' % (C_LOCATION, FTR_CENTER_X)
-
-FTR_CENTER_Y = "Center_Y"
-'''The centroid Y coordinate measurement feature name'''
-M_LOCATION_CENTER_Y = '%s_%s' % (C_LOCATION, FTR_CENTER_Y)
-
-FTR_OBJECT_NUMBER = "Object_Number"
-'''The object number - an index from 1 to however many objects'''
-M_NUMBER_OBJECT_NUMBER = '%s_%s' % (C_NUMBER, FTR_OBJECT_NUMBER)
-
-'''The format for the object count image measurement'''
-FF_COUNT = '%s_%%s' % C_COUNT
 
 FTR_FINAL_THRESHOLD = "FinalThreshold"
 
@@ -1212,86 +1183,6 @@ class Identify(cellprofiler.module.Module):
                     result += ["%s_Count" % child_object_name]
             return result
         return []
-
-
-def add_object_location_measurements(measurements,
-                                     object_name,
-                                     labels, object_count=None):
-    """Add the X and Y centers of mass to the measurements
-
-    measurements - the measurements container
-    object_name  - the name of the objects being measured
-    labels       - the label matrix
-    object_count - (optional) the object count if known, otherwise
-                   takes the maximum value in the labels matrix which is
-                   usually correct.
-    """
-    if object_count is None:
-        object_count = np.max(labels)
-    #
-    # Get the centers of each object - center_of_mass <- list of two-tuples.
-    #
-    if object_count:
-        centers = scipy.ndimage.center_of_mass(np.ones(labels.shape),
-                                               labels,
-                                               range(1, object_count + 1))
-        centers = np.array(centers)
-        centers = centers.reshape((object_count, 2))
-        location_center_y = centers[:, 0]
-        location_center_x = centers[:, 1]
-        number = np.arange(1, object_count + 1)
-    else:
-        location_center_y = np.zeros((0,), dtype=float)
-        location_center_x = np.zeros((0,), dtype=float)
-        number = np.zeros((0,), dtype=int)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_X,
-                                 location_center_x)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
-                                 location_center_y)
-    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
-
-
-def add_object_location_measurements_ijv(measurements,
-                                         object_name,
-                                         ijv, object_count=None):
-    '''Add object location measurements for IJV-style objects'''
-    if object_count is None:
-        object_count = 0 if ijv.shape[0] == 0 else np.max(ijv[:, 2])
-    if object_count == 0:
-        center_x = np.zeros(0)
-        center_y = np.zeros(0)
-    else:
-        areas = np.zeros(object_count, int)
-        areas_bc = np.bincount(ijv[:, 2])[1:]
-        areas[:len(areas_bc)] = areas_bc
-        center_x = np.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
-        center_y = np.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
-    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
-    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER,
-                                 np.arange(1, object_count + 1))
-
-
-def add_object_count_measurements(measurements, object_name, object_count):
-    """Add the # of objects to the measurements"""
-    measurements.add_measurement('Image',
-                                 FF_COUNT % object_name,
-                                 np.array([object_count],
-                                          dtype=float))
-
-
-def get_object_measurement_columns(object_name):
-    '''Get the column definitions for measurements made by identify modules
-
-    Identify modules can use this call when implementing
-    CPModule.get_measurement_columns to get the column definitions for
-    the measurements made by add_object_location_measurements and
-    add_object_count_measurements.
-    '''
-    return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-            (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-            (object_name, M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
 
 
 def get_threshold_measurement_columns(image_name):

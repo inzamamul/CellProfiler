@@ -9,6 +9,7 @@ from StringIO import StringIO
 import numpy as np
 import scipy.ndimage
 
+import cellprofiler.measurement.region
 from cellprofiler.preferences import set_headless
 
 set_headless()
@@ -306,9 +307,10 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.region.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 0)
-        for feature_name in (I.M_LOCATION_CENTER_X, I.M_LOCATION_CENTER_Y):
+        for feature_name in (
+        cellprofiler.measurement.region.M_LOCATION_CENTER_X, cellprofiler.measurement.region.M_LOCATION_CENTER_Y):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 0)
@@ -318,14 +320,14 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for object_name, feature_name, coltype in (
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
-                (OUTPUT_OBJECTS_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
+                (OUTPUT_OBJECTS_NAME, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                 (INPUT_OBJECTS_NAME, I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
                 (OUTPUT_OBJECTS_NAME, I.FF_PARENT % INPUT_OBJECTS_NAME,
                  cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
+                (cpmeas.IMAGE, cellprofiler.measurement.region.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER)):
             self.assertTrue(any([object_name == c[0] and
                                  feature_name == c[1] and
                                  coltype == c[2] for c in columns]))
@@ -372,10 +374,10 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        count = m.get_current_image_measurement(I.FF_COUNT % OUTPUT_OBJECTS_NAME)
+        count = m.get_current_image_measurement(cellprofiler.measurement.region.FF_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
-        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),
-                                    (I.M_LOCATION_CENTER_Y, 3),
+        for feature_name, value in ((cellprofiler.measurement.region.M_LOCATION_CENTER_X, 5),
+                                    (cellprofiler.measurement.region.M_LOCATION_CENTER_Y, 3),
                                     (I.FF_PARENT % INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)

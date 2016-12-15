@@ -8,6 +8,7 @@ import zlib
 
 import cellprofiler.image as cpi
 import cellprofiler.measurement as cpmeas
+import cellprofiler.measurement.region
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.object as cpo
@@ -2389,7 +2390,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.watershed_method.value = ID.WA_NONE
         x.threshold_scope.value = I.TS_BINARY_IMAGE
         x.run(workspace)
-        count_ftr = I.C_COUNT + "_" + OBJECTS_NAME
+        count_ftr = cellprofiler.measurement.region.C_COUNT + "_" + OBJECTS_NAME
         m = workspace.measurements
         self.assertTrue(m.has_feature(cpmeas.IMAGE, count_ftr))
         count = m.get_current_measurement(cpmeas.IMAGE, count_ftr)
@@ -2404,15 +2405,15 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         columns = x.get_measurement_columns(None)
         expected_columns = [
             (cpmeas.IMAGE, format % oname, coltype)
-            for format, coltype in ((I.FF_COUNT, cpmeas.COLTYPE_INTEGER),
+            for format, coltype in ((cellprofiler.measurement.region.FF_COUNT, cpmeas.COLTYPE_INTEGER),
                                     (I.FF_FINAL_THRESHOLD, cpmeas.COLTYPE_FLOAT),
                                     (I.FF_ORIG_THRESHOLD, cpmeas.COLTYPE_FLOAT),
                                     (I.FF_WEIGHTED_VARIANCE, cpmeas.COLTYPE_FLOAT),
                                     (I.FF_SUM_OF_ENTROPIES, cpmeas.COLTYPE_FLOAT))]
         expected_columns += [(oname, feature, cpmeas.COLTYPE_FLOAT)
-                             for feature in (I.M_LOCATION_CENTER_X,
-                                             I.M_LOCATION_CENTER_Y)]
-        expected_columns += [(oname, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER)]
+                             for feature in (cellprofiler.measurement.region.M_LOCATION_CENTER_X,
+                                             cellprofiler.measurement.region.M_LOCATION_CENTER_Y)]
+        expected_columns += [(oname, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER)]
         self.assertEqual(len(columns), len(expected_columns))
         for column in columns:
             self.assertTrue(any(all([colval == exval for colval, exval in zip(column, expected)])

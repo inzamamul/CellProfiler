@@ -28,9 +28,7 @@ from cellprofiler.measurement import C_FILE_NAME,\
      C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
      C_OBJECTS_SERIES, C_OBJECTS_FRAME
 
-from cellprofiler.modules.identify import \
-     C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
-     FTR_CENTER_X, FTR_CENTER_Y
+import cellprofiler.measurement.region
 
 from cellprofiler.modules.createbatchfiles import \
      CreateBatchFiles, F_BATCH_DATA_H5
@@ -1664,12 +1662,12 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                                  for c in columns]))
 
         for ftr in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_MD5_DIGEST, \
-            C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_OBJECTS_SERIES, C_OBJECTS_FRAME, C_COUNT:
+                   C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_OBJECTS_SERIES, C_OBJECTS_FRAME, cellprofiler.measurement.region.C_COUNT:
             mname = "_".join((ftr, OBJECTS_NAME))
             self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
                                  for c in columns]))
 
-        for mname in M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y:
+        for mname in cellprofiler.measurement.region.M_LOCATION_CENTER_X, cellprofiler.measurement.region.M_LOCATION_CENTER_Y:
             self.assertTrue(any([c[0] == OBJECTS_NAME and c[1] == mname
                                  for c in columns]))
 
@@ -1702,7 +1700,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
         self.assertTrue(C_OBJECTS_PATH_NAME in categories)
         self.assertTrue(C_OBJECTS_URL in categories)
         categories = m.get_categories(p, OBJECTS_NAME)
-        self.assertTrue(C_LOCATION in categories)
+        self.assertTrue(cellprofiler.measurement.region.C_LOCATION in categories)
 
     def test_04_03_get_measurements(self):
         p = cpp.Pipeline()
@@ -1721,7 +1719,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             self.assertEqual(mnames[0], IMAGE_NAME)
 
         for cname in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
-            C_COUNT:
+                     cellprofiler.measurement.region.C_COUNT:
             mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
             self.assertEqual(len(mnames), 1)
             self.assertEqual(mnames[0], OBJECTS_NAME)
@@ -1732,8 +1730,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
             self.assertEqual(len(mnames), 2)
             self.assertTrue(all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
 
-        mnames = m.get_measurements(p, OBJECTS_NAME, C_LOCATION)
-        self.assertTrue(all([x in mnames for x in FTR_CENTER_X, FTR_CENTER_Y]))
+        mnames = m.get_measurements(p, OBJECTS_NAME, cellprofiler.measurement.region.C_LOCATION)
+        self.assertTrue(all([x in mnames for x in cellprofiler.measurement.region.FTR_CENTER_X, cellprofiler.measurement.region.FTR_CENTER_Y]))
 
     def test_05_01_validate_single_channel(self):
         # regression test for issue #1429

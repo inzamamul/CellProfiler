@@ -41,6 +41,7 @@ import scipy.sparse
 
 import cellprofiler.image
 import cellprofiler.measurement
+import cellprofiler.measurement.region
 import cellprofiler.module
 import cellprofiler.modules.identify
 import cellprofiler.object
@@ -539,8 +540,8 @@ class FilterObjects(cellprofiler.module.Module):
             workspace.object_set.add_objects(target_objects, target_name)
             #
             # Add measurements for the new objects
-            cellprofiler.modules.identify.add_object_count_measurements(m, target_name, new_object_count)
-            cellprofiler.modules.identify.add_object_location_measurements(m, target_name, target_labels)
+            cellprofiler.measurement.region.add_object_count_measurements(m, target_name, new_object_count)
+            cellprofiler.measurement.region.add_object_location_measurements(m, target_name, target_labels)
             #
             # Relate the old numbering to the new numbering
             #
@@ -906,9 +907,9 @@ class FilterObjects(cellprofiler.module.Module):
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]
             if feature_name == "x_loc":
-                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_X
+                feature_name = cellprofiler.measurement.region.M_LOCATION_CENTER_X
             elif feature_name == "y_loc":
-                feature_name = cellprofiler.modules.identify.M_LOCATION_CENTER_Y
+                feature_name = cellprofiler.measurement.region.M_LOCATION_CENTER_Y
             features.append(feature_name)
 
         feature_vector = numpy.column_stack([
@@ -932,7 +933,7 @@ class FilterObjects(cellprofiler.module.Module):
                         (src_name,
                          cellprofiler.modules.identify.FF_CHILDREN_COUNT % target_name,
                          cellprofiler.measurement.COLTYPE_INTEGER)]
-            columns += cellprofiler.modules.identify.get_object_measurement_columns(target_name)
+            columns += cellprofiler.measurement.region.get_object_measurement_columns(target_name)
         return columns
 
     def get_categories(self, pipeline, object_name):

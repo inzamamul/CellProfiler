@@ -28,6 +28,8 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 
 import logging
 
+import cellprofiler.measurement.region
+
 logger = logging.getLogger(__name__)
 
 import os
@@ -241,12 +243,12 @@ class EditObjectsManually(I.Identify):
         #
         # The object count
         #
-        I.add_object_count_measurements(m, filtered_objects_name,
-                                        object_count)
+        cellprofiler.measurement.region.add_object_count_measurements(m, filtered_objects_name,
+                                                                      object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
+        cellprofiler.measurement.region.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
         #
         # Outlines if we want them
         #
@@ -447,7 +449,7 @@ class EditObjectsManually(I.Identify):
         '''Return information to use when creating database columns'''
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
-        columns = I.get_object_measurement_columns(filtered_image_name)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(filtered_image_name)
         columns += [(orig_image_name,
                      I.FF_CHILDREN_COUNT % filtered_image_name,
                      cpmeas.COLTYPE_INTEGER),

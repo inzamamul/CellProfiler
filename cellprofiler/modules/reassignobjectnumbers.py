@@ -49,9 +49,7 @@ import cellprofiler.setting as cps
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+import cellprofiler.measurement.region
 from cellprofiler.setting import YES, NO
 
 OPTION_UNIFY = "Unify"
@@ -305,12 +303,12 @@ class ReassignObjectNumbers(cpm.Module):
         workspace.object_set.add_objects(output_objects, self.output_objects_name.value)
 
         measurements = workspace.measurements
-        add_object_count_measurements(measurements,
-                                      self.output_objects_name.value,
-                                      np.max(output_objects.segmented))
-        add_object_location_measurements(measurements,
-                                         self.output_objects_name.value,
-                                         output_objects.segmented)
+        cellprofiler.measurement.region.add_object_count_measurements(measurements,
+                                                                      self.output_objects_name.value,
+                                                                      np.max(output_objects.segmented))
+        cellprofiler.measurement.region.add_object_location_measurements(measurements,
+                                                                         self.output_objects_name.value,
+                                                                         output_objects.segmented)
 
         #
         # Relate the output objects to the input ones and record
@@ -577,7 +575,7 @@ class ReassignObjectNumbers(cpm.Module):
         return image
 
     def get_measurement_columns(self, pipeline):
-        columns = get_object_measurement_columns(self.output_objects_name.value)
+        columns = cellprofiler.measurement.region.get_object_measurement_columns(self.output_objects_name.value)
         columns += [(self.output_objects_name.value,
                      FF_PARENT % self.objects_name.value,
                      cpmeas.COLTYPE_INTEGER),

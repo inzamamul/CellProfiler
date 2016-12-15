@@ -43,6 +43,7 @@ from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
+import cellprofiler.measurement.region
 import cellprofiler.module as cpm
 import cellprofiler.measurement as cpmeas
 import cellprofiler.object as cpo
@@ -247,11 +248,11 @@ class IdentifyDeadWorms(cpm.Module):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.object_name.value
-        m.add_measurement(object_name, I.M_LOCATION_CENTER_X, center_x)
-        m.add_measurement(object_name, I.M_LOCATION_CENTER_Y, center_y)
+        m.add_measurement(object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_X, center_x)
+        m.add_measurement(object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, center_y)
         m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
-        m.add_measurement(object_name, I.M_NUMBER_OBJECT_NUMBER, label_indexes)
-        m.add_image_measurement(I.FF_COUNT % object_name, nlabels)
+        m.add_measurement(object_name, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, label_indexes)
+        m.add_image_measurement(cellprofiler.measurement.region.FF_COUNT % object_name, nlabels)
         #
         # Make the objects
         #
@@ -521,28 +522,28 @@ class IdentifyDeadWorms(cpm.Module):
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         object_name = self.object_name.value
-        return [(object_name, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
-                (object_name, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
+        return [(object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
+                (object_name, cellprofiler.measurement.region.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
                 (object_name, M_ANGLE, cpmeas.COLTYPE_FLOAT),
-                (object_name, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
+                (object_name, cellprofiler.measurement.region.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
+                (cpmeas.IMAGE, cellprofiler.measurement.region.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [I.C_COUNT]
+            return [cellprofiler.measurement.region.C_COUNT]
         elif object_name == self.object_name:
-            return [I.C_LOCATION, I.C_NUMBER, C_WORMS]
+            return [cellprofiler.measurement.region.C_LOCATION, cellprofiler.measurement.region.C_NUMBER, C_WORMS]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.region.C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == I.C_LOCATION:
-                return [I.FTR_CENTER_X, I.FTR_CENTER_Y]
-            elif category == I.C_NUMBER:
-                return [I.FTR_OBJECT_NUMBER]
+            if category == cellprofiler.measurement.region.C_LOCATION:
+                return [cellprofiler.measurement.region.FTR_CENTER_X, cellprofiler.measurement.region.FTR_CENTER_Y]
+            elif category == cellprofiler.measurement.region.C_NUMBER:
+                return [cellprofiler.measurement.region.FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []
