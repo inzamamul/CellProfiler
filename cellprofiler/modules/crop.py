@@ -809,53 +809,53 @@ class Crop(cpm.Module):
             cropping[bottom:, :] = False
         return cropping
 
-    def plate_fixup(self, pixel_data):
-        """Fix up the cropping image based on the plate fixup rules
-
-        The rules:
-        * Trim rows and columns off of the edges if less than 50%
-        * Use the horizontal and vertical trim to trim the image further
-        """
-        pixel_data = pixel_data.copy()
-        i_histogram = pixel_data.sum(axis=1)
-        i_cumsum = np.cumsum(i_histogram > pixel_data.shape[0] / 2)
-        j_histogram = pixel_data.sum(axis=0)
-        j_cumsum = np.cumsum(j_histogram > pixel_data.shape[1] / 2)
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
-        i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
-        j_end = j_last + 1
-        if not self.horizontal_limits.unbounded_min:
-            j_first = max(j_first, self.horizontal_limits.min)
-        if not self.horizontal_limits.unbounded_max:
-            j_end = min(j_end, self.horizontal_limits.max)
-        if not self.vertical_limits.unbounded_min:
-            i_first = max(i_first, self.vertical_limits.min)
-        if not self.vertical_limits.unbounded_max:
-            i_end = min(i_end, self.vertical_limits.max)
-        if i_first > 0:
-            if pixel_data.ndim == 3:
-                pixel_data[:i_first, :, :] = 0
-            else:
-                pixel_data[:i_first, :] = 0
-        if i_end < pixel_data.shape[0]:
-            if pixel_data.ndim == 3:
-                pixel_data[i_end:, :, :] = 0
-            else:
-                pixel_data[i_end:, :] = 0
-        if j_first > 0:
-            if pixel_data.ndim == 3:
-                pixel_data[:, :j_first, :] = 0
-            else:
-                pixel_data[:, :j_first] = 0
-        if j_end < pixel_data.shape[1]:
-            if pixel_data.ndim == 3:
-                pixel_data[:, j_end:, :] = 0
-            else:
-                pixel_data[:, j_end:] = 0
-        return pixel_data
+    # def plate_fixup(self, pixel_data):
+    #     """Fix up the cropping image based on the plate fixup rules
+    #
+    #     The rules:
+    #     * Trim rows and columns off of the edges if less than 50%
+    #     * Use the horizontal and vertical trim to trim the image further
+    #     """
+    #     pixel_data = pixel_data.copy()
+    #     i_histogram = pixel_data.sum(axis=1)
+    #     i_cumsum = np.cumsum(i_histogram > pixel_data.shape[0] / 2)
+    #     j_histogram = pixel_data.sum(axis=0)
+    #     j_cumsum = np.cumsum(j_histogram > pixel_data.shape[1] / 2)
+    #     i_first = np.argwhere(i_cumsum == 1)[0]
+    #     i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+    #     i_end = i_last + 1
+    #     j_first = np.argwhere(j_cumsum == 1)[0]
+    #     j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+    #     j_end = j_last + 1
+    #     if not self.horizontal_limits.unbounded_min:
+    #         j_first = max(j_first, self.horizontal_limits.min)
+    #     if not self.horizontal_limits.unbounded_max:
+    #         j_end = min(j_end, self.horizontal_limits.max)
+    #     if not self.vertical_limits.unbounded_min:
+    #         i_first = max(i_first, self.vertical_limits.min)
+    #     if not self.vertical_limits.unbounded_max:
+    #         i_end = min(i_end, self.vertical_limits.max)
+    #     if i_first > 0:
+    #         if pixel_data.ndim == 3:
+    #             pixel_data[:i_first, :, :] = 0
+    #         else:
+    #             pixel_data[:i_first, :] = 0
+    #     if i_end < pixel_data.shape[0]:
+    #         if pixel_data.ndim == 3:
+    #             pixel_data[i_end:, :, :] = 0
+    #         else:
+    #             pixel_data[i_end:, :] = 0
+    #     if j_first > 0:
+    #         if pixel_data.ndim == 3:
+    #             pixel_data[:, :j_first, :] = 0
+    #         else:
+    #             pixel_data[:, :j_first] = 0
+    #     if j_end < pixel_data.shape[1]:
+    #         if pixel_data.ndim == 3:
+    #             pixel_data[:, j_end:, :] = 0
+    #         else:
+    #             pixel_data[:, j_end:] = 0
+    #     return pixel_data
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
