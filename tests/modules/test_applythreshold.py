@@ -47,7 +47,7 @@ class TestApplyThreshold(unittest.TestCase):
         return workspace, module
 
     def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
-        self.assertEqual(cellprofiler.modules.applythreshold.ApplyThreshold.variable_revision_number, 8)
+        self.assertEqual(cellprofiler.modules.applythreshold.ApplyThreshold.variable_revision_number, 9)
 
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -125,19 +125,19 @@ class TestApplyThreshold(unittest.TestCase):
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
-        self.assertEqual(module.image_name, "RainbowPony")
-        self.assertEqual(module.thresholded_image_name, "GrayscalePony")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_ADAPTIVE)
-        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
-        self.assertEqual(module.threshold_smoothing_scale, 1.3488)
-        self.assertEqual(module.threshold_correction_factor, 1.1)
+        self.assertEqual(module.image_name.value, "RainbowPony")
+        self.assertEqual(module.thresholded_image_name.value, "GrayscalePony")
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.identify.TS_ADAPTIVE)
+        self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_MCT)
+        self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
+        self.assertEqual(module.threshold_correction_factor.value, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
         self.assertEqual(module.threshold_range.max, .99)
-        self.assertEqual(module.manual_threshold, 0.1)
-        self.assertEqual(module.thresholding_measurement, "Pony_Perimeter")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
-        self.assertEqual(module.adaptive_window_size, 13)
+        self.assertEqual(module.manual_threshold.value, 0.1)
+        self.assertEqual(module.thresholding_measurement.value, "Pony_Perimeter")
+        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground.value, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(module.adaptive_window_size.value, 13)
 
     def test_01_08_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -224,6 +224,101 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.thresholded_image_name, "ThreshBlue")
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
+        self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
+        self.assertEqual(module.threshold_smoothing_scale, 0)
+        self.assertEqual(module.threshold_correction_factor, 1.0)
+        self.assertEqual(module.threshold_range.min, 0.0)
+        self.assertEqual(module.threshold_range.max, 1.0)
+        self.assertEqual(module.manual_threshold, 0.0)
+        self.assertEqual(module.thresholding_measurement, "None")
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(module.adaptive_window_size, 50)
+
+    def test_01_09_load_v9(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:5
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    :
+    Filter images?:Images only
+    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:No
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:All images
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B\x5D
+    Image set matching method:Order
+    Set intensity range from:Image metadata
+    Assignments count:1
+    Single images count:0
+    Maximum intensity:255.0
+    Volumetric:No
+    x:1.0
+    y:1.0
+    z:1.0
+    Select the rule criteria:and (file does contain "")
+    Name to assign these images:DNA
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:255.0
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:DNA
+    Name the output image:ApplyThreshold
+    Threshold strategy:Global
+    Thresholding method:MCT
+    Threshold smoothing scale:0.0
+    Threshold correction factor:1.0
+    Lower and upper bounds on threshold:0.0,1.0
+    Manual threshold:0.0
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:50
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2.0
+        """
+
+        fd = StringIO.StringIO(data)
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.loadtxt(fd)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.thresholded_image_name, "ApplyThreshold")
         self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale, 0)

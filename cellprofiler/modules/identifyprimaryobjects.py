@@ -227,10 +227,14 @@ SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
 
 class IdentifyPrimaryObjects(identify.Identify):
     variable_revision_number = 13
+
     category = "Object Processing"
+
     module_name = "IdentifyPrimaryObjects"
 
     def create_settings(self):
+        super(IdentifyPrimaryObjects, self).create_settings()
+
         self.image_name = cellprofiler.setting.ImageNameSubscriber(
             "Select the input image",
             doc="Select the image that you want to use to identify objects."
@@ -319,8 +323,6 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "PROTIP_RECOMEND_ICON": cellprofiler.gui.help.PROTIP_RECOMEND_ICON
             })
         )
-
-        self.create_threshold_settings()
 
         self.unclump_method = cellprofiler.setting.Choice(
             'Method to distinguish clumped objects',
@@ -633,16 +635,16 @@ class IdentifyPrimaryObjects(identify.Identify):
                 "LIMIT_CHOICE_VALUE": LIMIT_NONE,
                 "LOW_RES_MAXIMA_TEXT": self.low_res_maxima.get_text(),
                 "NO": cellprofiler.setting.NO,
-                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.threshold_correction_factor.get_text(),
+                "THRESHOLD_CORRECTION_FACTOR_TEXT": self.apply_threshold.threshold_correction_factor.get_text(),
                 "THRESHOLD_CORRECTION_FACTOR_VALUE": 1.0,
-                "THRESHOLD_METHOD_TEXT": self.threshold_method.get_text(),
+                "THRESHOLD_METHOD_TEXT": self.apply_threshold.threshold_method.get_text(),
                 "THRESHOLD_METHOD_VALUE": centrosome.threshold.TM_MCT,
                 "THRESHOLD_RANGE_MAX": 1.0,
                 "THRESHOLD_RANGE_MIN": 0.0,
-                "THRESHOLD_RANGE_TEXT": self.threshold_range.get_text(),
-                "THRESHOLD_SCOPE_TEXT": self.threshold_scope.get_text(),
+                "THRESHOLD_RANGE_TEXT": self.apply_threshold.threshold_range.get_text(),
+                "THRESHOLD_SCOPE_TEXT": self.apply_threshold.threshold_scope.get_text(),
                 "THRESHOLD_SCOPE_VALUE": identify.TS_GLOBAL,
-                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.threshold_smoothing_scale.get_text(),
+                "THRESHOLD_SMOOTHING_SCALE_TEXT": self.apply_threshold.threshold_smoothing_scale.get_text(),
                 "THRESHOLD_SMOOTHING_SCALE_VALUE": 1.3488,
                 "UNCLUMP_METHOD_TEXT": self.unclump_method.get_text(),
                 "UNCLUMP_METHOD_VALUE": UN_INTENSITY,
@@ -653,6 +655,8 @@ class IdentifyPrimaryObjects(identify.Identify):
         )
 
     def settings(self):
+        settings = super(IdentifyPrimaryObjects, self).settings()
+
         return [
             self.image_name,
             self.object_name,
@@ -670,7 +674,7 @@ class IdentifyPrimaryObjects(identify.Identify):
             self.limit_choice,
             self.maximum_object_count,
             self.use_advanced
-        ] + self.get_threshold_settings()
+        ] + settings
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
@@ -715,18 +719,27 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             variable_revision_number = 13
 
-        setting_values = setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
+        upgrade_settings, _, _ = super(IdentifyPrimaryObjects, self).upgrade_settings(
+            setting_values[N_SETTINGS:],
+            variable_revision_number,
+            module_name,
+            False
+        )
+
+        setting_values = setting_values[:N_SETTINGS] + upgrade_settings
 
         return setting_values, variable_revision_number, False
 
     def help_settings(self):
+        help_settings = super(IdentifyPrimaryObjects, self).help_settings()
+
         return [self.use_advanced,
                 self.image_name,
                 self.object_name,
                 self.size_range,
                 self.exclude_size,
                 self.exclude_border_objects
-                ] + self.get_threshold_help_settings() + [
+                ] + help_settings + [
                    self.unclump_method,
                    self.watershed_method,
                    self.automatic_smoothing,
@@ -749,7 +762,7 @@ class IdentifyPrimaryObjects(identify.Identify):
         ]
 
         if self.use_advanced.value:
-            vv += self.get_threshold_visible_settings()
+            vv += super(IdentifyPrimaryObjects, self).visible_settings()
             vv += [self.unclump_method]
             if self.unclump_method != UN_NONE:
                 vv += [self.watershed_method, self.automatic_smoothing]

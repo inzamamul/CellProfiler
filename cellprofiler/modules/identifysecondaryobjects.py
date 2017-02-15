@@ -133,6 +133,8 @@ class IdentifySecondaryObjects(identify.Identify):
     category = "Object Processing"
 
     def create_settings(self):
+        super(IdentifySecondaryObjects, self).create_settings()
+
         self.primary_objects = cellprofiler.setting.ObjectNameSubscriber(
             "Select the input objects",
             "Nuclei",
@@ -228,8 +230,6 @@ class IdentifySecondaryObjects(identify.Identify):
             })
         )
 
-        self.create_threshold_settings()
-
         # default smoothing scale is different for idprimary and idsecondary
         self.threshold_smoothing_scale.value = 0
 
@@ -289,7 +289,8 @@ class IdentifySecondaryObjects(identify.Identify):
             in memory as "unedited objects"; this allows them to be considered in downstream modules that
             modify the segmentation.</p>
             """.format(**{
-                "YES": cellprofiler.setting.YES
+                "YES": cellprofiler.setting.YES,
+                "NO": cellprofiler.setting.NO
             })
         )
 
@@ -353,46 +354,87 @@ class IdentifySecondaryObjects(identify.Identify):
         )
 
     def settings(self):
+        settings = super(IdentifySecondaryObjects, self).settings()
+
         return [
-                   self.primary_objects, self.objects_name, self.method, self.image_name,
-                   self.distance_to_dilate, self.regularization_factor, self.outlines_name,
-                   self.use_outlines, self.wants_discard_edge, self.wants_discard_primary,
-                   self.new_primary_objects_name, self.wants_primary_outlines,
-                   self.new_primary_outlines_name, self.fill_holes] + \
-               self.get_threshold_settings()
+            self.primary_objects,
+            self.objects_name,
+            self.method,
+            self.image_name,
+            self.distance_to_dilate,
+            self.regularization_factor,
+            self.outlines_name,
+            self.use_outlines,
+            self.wants_discard_edge,
+            self.wants_discard_primary,
+            self.new_primary_objects_name,
+            self.wants_primary_outlines,
+            self.new_primary_outlines_name,
+            self.fill_holes
+        ] + settings
 
     def visible_settings(self):
-        result = [self.image_name, self.primary_objects, self.objects_name,
-                  self.method]
+        visible_settings = [
+            self.image_name,
+            self.primary_objects,
+            self.objects_name,
+            self.method
+        ]
+
         if self.method != M_DISTANCE_N:
-            result += self.get_threshold_visible_settings()
+            visible_settings += super(IdentifySecondaryObjects, self).visible_settings()
+
         if self.method in (M_DISTANCE_B, M_DISTANCE_N):
-            result.append(self.distance_to_dilate)
+            visible_settings += [self.distance_to_dilate]
         elif self.method == M_PROPAGATION:
-            result.append(self.regularization_factor)
-        result += [self.fill_holes, self.wants_discard_edge]
+            visible_settings += [self.regularization_factor]
+
+        visible_settings += [
+            self.fill_holes,
+            self.wants_discard_edge
+        ]
+
         if self.wants_discard_edge:
-            result.append(self.wants_discard_primary)
+            visible_settings += [self.wants_discard_primary]
+
             if self.wants_discard_primary:
-                result += [self.new_primary_objects_name,
-                           self.wants_primary_outlines]
+                visible_settings += [
+                    self.new_primary_objects_name,
+                    self.wants_primary_outlines
+                ]
+
                 if self.wants_primary_outlines:
-                    result.append(self.new_primary_outlines_name)
-        result.append(self.use_outlines)
+                    visible_settings += [self.new_primary_outlines_name]
+
+        visible_settings+= [self.use_outlines]
+
         if self.use_outlines.value:
-            result.append(self.outlines_name)
-        return result
+            visible_settings += [self.outlines_name]
+
+        return visible_settings
 
     def help_settings(self):
-        return [self.primary_objects, self.objects_name,
-                self.method, self.image_name] + \
-               self.get_threshold_visible_settings() + \
-               [self.distance_to_dilate,
-                self.regularization_factor,
-                self.fill_holes, self.wants_discard_edge, self.wants_discard_primary,
-                self.new_primary_objects_name, self.wants_primary_outlines,
-                self.new_primary_outlines_name,
-                self.use_outlines, self.outlines_name]
+        help_settings = [
+            self.primary_objects,
+            self.objects_name,
+            self.method,
+            self.image_name
+        ]
+
+        help_settings += super(IdentifySecondaryObjects, self).help_settings()
+
+        help_settings += [
+            self.distance_to_dilate,
+            self.regularization_factor,
+            self.fill_holes,
+            self.wants_discard_edge,
+            self.wants_discard_primary,
+            self.new_primary_objects_name,
+            self.wants_primary_outlines,
+            self.new_primary_outlines_name,
+            self.use_outlines,
+            self.outlines_name
+        ]
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
@@ -401,13 +443,18 @@ class IdentifySecondaryObjects(identify.Identify):
         if variable_revision_number < 9:
             raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
 
-        setting_values = \
-            setting_values[:N_SETTING_VALUES] + self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
+        upgrade_settings, _, _ = super(IdentifySecondaryObjects, self).upgrade_settings(
+            setting_values[N_SETTING_VALUES:],
+            variable_revision_number,
+            module_name,
+            False
+        )
+
+        setting_values = setting_values[:N_SETTING_VALUES] + upgrade_settings
 
         return setting_values, variable_revision_number, False
 
     def run(self, workspace):
-        assert isinstance(workspace, cellprofiler.workspace.Workspace)
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
