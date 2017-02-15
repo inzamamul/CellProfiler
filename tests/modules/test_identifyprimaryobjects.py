@@ -814,41 +814,45 @@ class TestIdentifyPrimaryObjects(unittest.TestCase):
     def test_02_12_fly(self):
         '''Run identify on the fly image'''
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:1
-SVNRevision:9722
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:1
+HasImagePlaneDetails:False
 
-IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+IdentifyPrimaryObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:13|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:CropBlue
     Name the primary objects to be identified:Nuclei
     Typical diameter of objects, in pixel units (Min,Max):15,40
     Discard objects outside the diameter range?:Yes
-    Try to merge too small objects with nearby larger objects?:No
     Discard objects touching the border of the image?:Yes
-    Select the thresholding method:Otsu Global
-    Threshold correction factor:1.6
-    Lower and upper bounds on threshold:0,1
-    Approximate fraction of image covered by objects?:0.2
     Method to distinguish clumped objects:Intensity
     Method to draw dividing lines between clumped objects:Intensity
     Size of smoothing filter:10
     Suppress local maxima that are closer than this minimum allowed distance:5
     Speed up by using lower-resolution image to find local maxima?:Yes
-    Name the outline image:None
-    Fill holes in identified objects?:Yes
-    Automatically calculate size of smoothing filter?:Yes
+    Fill holes in identified objects?:After both thresholding and declumping
+    Automatically calculate size of smoothing filter for declumping?:Yes
     Automatically calculate minimum allowed distance between local maxima?:Yes
-    Manual threshold:0.0
-    Select binary image:Otsu Global
-    Retain outlines of the identified objects?:No
-    Automatically calculate the threshold using the Otsu method?:Yes
-    Enter Laplacian of Gaussian threshold:.5
-    Two-class or three-class thresholding?:Two classes
-    Minimize the weighted variance or the entropy?:Weighted variance
-    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
-    Enter LoG filter diameter:5
     Handling of objects if excessive number of objects identified:Continue
     Maximum number of objects:500
+    Use advanced settings?:Yes
+    Threshold setting version:3
+    Threshold strategy:Global
+    Thresholding method:Otsu
+    Threshold smoothing scale:1.3488
+    Threshold correction factor:1.6
+    Lower and upper bounds on threshold:0,1
+    Manual threshold:0.0
+    Select the measurement to threshold with:None
+    Two-class or three-class thresholding?:Two classes
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Size of adaptive window:10
+    Lower outlier fraction:0.05
+    Upper outlier fraction:0.05
+    Averaging method:Mean
+    Variance method:Standard deviation
+    # of deviations:2
 """
         pipeline = cellprofiler.pipeline.Pipeline()
 
