@@ -673,154 +673,12 @@ class IdentifyPrimaryObjects(identify.Identify):
         ] + self.get_threshold_settings()
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        """Upgrade the strings in setting_values dependent on saved revision
-        """
-        if variable_revision_number == 12 and from_matlab:
-            # Translating from Matlab:
-            #
-            # Variable # 16 (LaplaceValues) removed
-            # Variable # 19 (test mode) removed
-            #
-            # Added automatic smoothing / suppression checkboxes
-            # Added checkbox for setting manual threshold
-            # Added checkbox for thresholding using a binary image
-            # Added checkbox instead of "DO_NOT_USE" for saving outlines
-            new_setting_values = list(setting_values[:18])
-            #
-            # Remove the laplace values setting
-            #
-            del new_setting_values[15]
-            # Automatic smoothing checkbox - replace "Automatic" with
-            # a number
-            if setting_values[SMOOTHING_SIZE_VAR] == cellprofiler.setting.AUTOMATIC:
-                new_setting_values += [cellprofiler.setting.YES]
-                new_setting_values[SMOOTHING_SIZE_VAR] = '10'
-            else:
-                new_setting_values += [cellprofiler.setting.NO]
-            #
-            # Automatic maxima suppression size
-            #
-            if setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] == cellprofiler.setting.AUTOMATIC:
-                new_setting_values += [cellprofiler.setting.YES]
-                new_setting_values[MAXIMA_SUPPRESSION_SIZE_VAR] = '5'
-            else:
-                new_setting_values += [cellprofiler.setting.NO]
-            if not setting_values[THRESHOLD_METHOD_VAR] in centrosome.threshold.TM_METHODS:
-                # Try to figure out what the user wants if it's not one of the
-                # pre-selected choices.
-                try:
-                    # If it's a floating point number, then the user
-                    # was trying to type in a manual threshold
-                    ignore = float(setting_values[THRESHOLD_METHOD_VAR])
-                    new_setting_values[THRESHOLD_METHOD_VAR] = centrosome.threshold.TM_MANUAL
-                    # Set the manual threshold to be the contents of the
-                    # old threshold method variable and ignore the binary mask
-                    new_setting_values += [setting_values[THRESHOLD_METHOD_VAR],
-                                           cellprofiler.setting.DO_NOT_USE]
-                except:
-                    # Otherwise, assume that it's the name of a binary image
-                    new_setting_values[THRESHOLD_METHOD_VAR] = centrosome.threshold.TM_BINARY_IMAGE
-                    new_setting_values += ['0.0',
-                                           setting_values[THRESHOLD_METHOD_VAR]]
-            else:
-                new_setting_values += ['0.0',
-                                       setting_values[THRESHOLD_METHOD_VAR]]
-            #
-            # The object fraction is stored as a percent in Matlab (sometimes)
-            #
-            m = re.match("([0-9.])%", setting_values[OBJECT_FRACTION_VAR])
-            if m:
-                setting_values[OBJECT_FRACTION_VAR] = str(float(m.groups()[0]) / 100.0)
-            #
-            # Check the "DO_NOT_USE" status of the save outlines variable
-            # to get the value for should_save_outlines
-            #
-            if new_setting_values[SAVE_OUTLINES_VAR] == cellprofiler.setting.DO_NOT_USE:
-                new_setting_values += [cellprofiler.setting.NO]
-                new_setting_values[SAVE_OUTLINES_VAR] = cellprofiler.setting.NONE
-            else:
-                new_setting_values += [cellprofiler.setting.YES]
-            setting_values = new_setting_values
-            if new_setting_values[UNCLUMP_METHOD_VAR] == cellprofiler.setting.DO_NOT_USE:
-                new_setting_values[UNCLUMP_METHOD_VAR] = UN_NONE
-            if new_setting_values[WATERSHED_VAR] == cellprofiler.setting.DO_NOT_USE:
-                new_setting_values[WATERSHED_VAR] = WA_NONE
-            variable_revision_number = 1
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
-            # Added LOG method
-            setting_values = list(setting_values)
-            setting_values += [cellprofiler.setting.YES, ".5"]
-            variable_revision_number = 2
+        if from_matlab:
+            raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
-        if (not from_matlab) and variable_revision_number == 2:
-            # Added Otsu options
-            setting_values = list(setting_values)
-            setting_values += [identify.O_TWO_CLASS, identify.O_WEIGHTED_VARIANCE,
-                               identify.O_FOREGROUND]
-            variable_revision_number = 3
+        if variable_revision_number < 10:
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
 
-        if (not from_matlab) and variable_revision_number == 3:
-            # Added more LOG options
-            setting_values = setting_values + [cellprofiler.setting.YES, "5"]
-            variable_revision_number = 4
-
-        if (not from_matlab) and variable_revision_number == 4:
-            # Added # of object limits
-            setting_values = setting_values + [LIMIT_NONE, "500"]
-            variable_revision_number = 5
-
-        if (not from_matlab) and variable_revision_number == 5:
-            # Changed object number limit option from "No action" to "Continue"
-            if setting_values[-2] == "No action":
-                setting_values[-2] = LIMIT_NONE
-            variable_revision_number = 6
-
-        if (not from_matlab) and variable_revision_number == 6:
-            # Added measurements to threshold method
-            setting_values = setting_values + [cellprofiler.setting.NONE]
-            variable_revision_number = 7
-        if (not from_matlab) and variable_revision_number == 7:
-            # changed DISTANCE to SHAPE
-            if setting_values[11] == "Distance":
-                setting_values[11] = "Shape"
-            variable_revision_number = 8
-
-        if (not from_matlab) and variable_revision_number == 8:
-            # Added adaptive thresholding settings
-            setting_values += [identify.FI_IMAGE_SIZE, "10"]
-            variable_revision_number = 9
-
-        if (not from_matlab) and variable_revision_number == 9:
-            #
-            # Unified threshold measurements.
-            #
-            threshold_method = setting_values[OFF_THRESHOLD_METHOD_V9]
-            threshold_correction = setting_values[OFF_THRESHOLD_CORRECTION_V9]
-            threshold_range = setting_values[OFF_THRESHOLD_RANGE_V9]
-            object_fraction = setting_values[OFF_OBJECT_FRACTION_V9]
-            manual_threshold = setting_values[OFF_MANUAL_THRESHOLD_V9]
-            binary_image = setting_values[OFF_BINARY_IMAGE_V9]
-            two_class_otsu = setting_values[OFF_TWO_CLASS_OTSU_V9]
-            use_weighted_variance = setting_values[OFF_USE_WEIGHTED_VARIANCE_V9]
-            assign_middle_to_foreground = setting_values[OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9]
-            thresholding_measurement = setting_values[OFF_THRESHOLDING_MEASUREMENT_V9]
-            adaptive_window_method = setting_values[OFF_ADAPTIVE_WINDOW_METHOD_V9]
-            adaptive_window_size = setting_values[OFF_ADAPTIVE_WINDOW_SIZE_V9]
-
-            threshold_settings = self.upgrade_legacy_threshold_settings(
-                threshold_method, identify.TSM_AUTOMATIC, threshold_correction,
-                threshold_range, object_fraction, manual_threshold,
-                thresholding_measurement, binary_image, two_class_otsu,
-                use_weighted_variance, assign_middle_to_foreground,
-                adaptive_window_method, adaptive_window_size)
-
-            setting_values = setting_values[:OFF_THRESHOLD_METHOD_V9] + \
-                setting_values[(OFF_OBJECT_FRACTION_V9 + 1): OFF_MANUAL_THRESHOLD_V9] + \
-                setting_values[(OFF_BINARY_IMAGE_V9 + 1): OFF_TWO_CLASS_OTSU_V9] + \
-                setting_values[(OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9 + 1): OFF_THRESHOLDING_MEASUREMENT_V9] + \
-                threshold_settings
-            variable_revision_number = 10
         if variable_revision_number == 10:
             setting_values = list(setting_values)
             if setting_values[OFF_FILL_HOLES_V10] == cellprofiler.setting.NO:
@@ -857,11 +715,9 @@ class IdentifyPrimaryObjects(identify.Identify):
 
             variable_revision_number = 13
 
-        # upgrade threshold settings
-        setting_values = \
-            setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
+        setting_values = setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number, False
 
     def help_settings(self):
         return [self.use_advanced,

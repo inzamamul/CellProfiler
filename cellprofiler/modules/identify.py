@@ -577,49 +577,6 @@ class Identify(cellprofiler.module.Module):
                 self.threshold_range,
                 self.threshold_smoothing_scale]
 
-    def upgrade_legacy_threshold_settings(
-            self, threshold_method, threshold_smoothing_choice, threshold_correction_factor,
-            threshold_range, object_fraction, manual_threshold,
-            thresholding_measurement, binary_image,
-            two_class_otsu, use_weighted_variance, assign_middle_to_foreground,
-            adaptive_window_method, adaptive_window_size,
-            masking_objects=O_FROM_IMAGE):
-        '''Return threshold setting strings built from the legacy elements
-
-        IdentifyPrimaryObjects, IdentifySecondaryObjects and ApplyThreshold
-        used to store their settings independently. This method creates the
-        unified settings block from the values in their separate arrangements.
-
-        All parameters should be self-explanatory except for
-        threshold_smoothing_choice which should be TSM_AUTOMATIC if
-        smoothing was applied to the image before thresholding or TSM_NONE
-        if it wasn't'''
-        if threshold_method == centrosome.threshold.TM_BINARY_IMAGE:
-            threshold_scope = TS_BINARY_IMAGE
-            threshold_method = centrosome.threshold.TM_OTSU
-        elif threshold_method == centrosome.threshold.TM_MANUAL:
-            threshold_scope = TS_MANUAL
-            threshold_method = centrosome.threshold.TM_OTSU
-        elif threshold_method == centrosome.threshold.TM_MEASUREMENT:
-            threshold_scope = TS_MEASUREMENT
-            threshold_method = centrosome.threshold.TM_OTSU
-        else:
-            threshold_method, threshold_scope = threshold_method.rsplit(" ", 1)
-            if threshold_scope == centrosome.threshold.TM_GLOBAL:
-                threshold_scope = TS_GLOBAL
-            elif threshold_scope == centrosome.threshold.TM_PER_OBJECT:
-                threshold_scope = TS_PER_OBJECT
-            elif threshold_scope == centrosome.threshold.TM_ADAPTIVE:
-                threshold_scope = TS_ADAPTIVE
-        setting_values = [
-            "1", threshold_scope, threshold_method, threshold_smoothing_choice,
-            "1", threshold_correction_factor, threshold_range,
-            object_fraction, manual_threshold, thresholding_measurement,
-            binary_image, masking_objects, two_class_otsu,
-            use_weighted_variance, assign_middle_to_foreground,
-            adaptive_window_method, adaptive_window_size]
-        return setting_values
-
     def upgrade_threshold_settings(self, setting_values):
         '''Upgrade the threshold settings to the current version
 

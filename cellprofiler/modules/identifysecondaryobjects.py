@@ -369,127 +369,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 self.new_primary_outlines_name,
                 self.use_outlines, self.outlines_name]
 
-    def upgrade_settings(self,
-                         setting_values,
-                         variable_revision_number,
-                         module_name,
-                         from_matlab):
-        if from_matlab and variable_revision_number == 1:
-            NotImplementedError("Sorry, Matlab variable revision # 1 is not supported")
-        if from_matlab and variable_revision_number == 2:
-            # Added test mode - default = no
-            setting_values = list(setting_values)
-            setting_values.append(cps.NO)
-            variable_revision_number = 3
-        if from_matlab and variable_revision_number == 3:
-            new_setting_values = list(setting_values)
-            if setting_values[4].isdigit():
-                # User entered manual threshold
-                new_setting_values[4] = cpthresh.TM_MANUAL
-                new_setting_values.append(setting_values[4])
-                new_setting_values.append(cps.DO_NOT_USE)
-            elif (not setting_values[4] in
-                (cpthresh.TM_OTSU_GLOBAL, cpthresh.TM_OTSU_ADAPTIVE,
-                 cpthresh.TM_OTSU_PER_OBJECT, cpthresh.TM_MOG_GLOBAL,
-                 cpthresh.TM_MOG_ADAPTIVE, cpthresh.TM_MOG_PER_OBJECT,
-                 cpthresh.TM_BACKGROUND_GLOBAL, cpthresh.TM_BACKGROUND_ADAPTIVE,
-                 cpthresh.TM_BACKGROUND_PER_OBJECT, cpthresh.TM_ROBUST_BACKGROUND,
-                 cpthresh.TM_ROBUST_BACKGROUND_GLOBAL,
-                 cpthresh.TM_ROBUST_BACKGROUND_ADAPTIVE,
-                 cpthresh.TM_ROBUST_BACKGROUND_PER_OBJECT,
-                 cpthresh.TM_RIDLER_CALVARD_GLOBAL, cpthresh.TM_RIDLER_CALVARD_ADAPTIVE,
-                 cpthresh.TM_RIDLER_CALVARD_PER_OBJECT, cpthresh.TM_KAPUR_GLOBAL,
-                 cpthresh.TM_KAPUR_ADAPTIVE, cpthresh.TM_KAPUR_PER_OBJECT)):
-                # User entered an image name -  guess
-                new_setting_values[4] = cpthresh.TM_BINARY_IMAGE
-                new_setting_values.append('0')
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append('0')
-                new_setting_values.append(cps.DO_NOT_USE)
-            if setting_values[10] == cps.DO_NOT_USE:
-                new_setting_values.append(cps.NO)
-            else:
-                new_setting_values.append(cps.YES)
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab:
-            NotImplementedError(
-                    "Don't know how to convert Matlab IdentifySecondary revision # %d" % variable_revision_number)
-        if variable_revision_number != self.variable_revision_number:
-            NotImplementedError("Don't know how to handle IdentifySecondary revision # %d" % variable_revision_number)
-        if (not from_matlab) and variable_revision_number == 1:
-            # Removed test mode
-            # added Otsu parameters.
-            setting_values = setting_values[:11] + setting_values[12:]
-            setting_values += [cpmi.O_TWO_CLASS, cpmi.O_WEIGHTED_VARIANCE,
-                               cpmi.O_FOREGROUND]
-            variable_revision_number = 2
+            raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
-        if (not from_matlab) and variable_revision_number == 2:
-            # Added discarding touching
-            setting_values = setting_values + [cps.NO, cps.NO, "FilteredNuclei"]
-            variable_revision_number = 3
+        if variable_revision_number < 9:
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
 
-        if (not from_matlab) and variable_revision_number == 3:
-            # Added new primary outlines
-            setting_values = setting_values + [cps.NO, "FilteredNucleiOutlines"]
-            variable_revision_number = 4
+        setting_values = \
+            setting_values[:N_SETTING_VALUES] + self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
 
-        if (not from_matlab) and variable_revision_number == 4:
-            # Added measurements to threshold methods
-            setting_values = setting_values + [cps.NONE]
-            variable_revision_number = 5
-
-        if (not from_matlab) and variable_revision_number == 5:
-            # Change name of watershed option
-            if setting_values[2] == "Watershed":
-                setting_values[2] = M_WATERSHED_G
-            variable_revision_number = 6
-
-        if (not from_matlab) and variable_revision_number == 6:
-            # Fill labeled holes added
-            fill_holes = (cps.NO
-                          if setting_values[2] in (M_DISTANCE_B, M_DISTANCE_N)
-                          else cps.YES)
-            setting_values = setting_values + [fill_holes]
-            variable_revision_number = 7
-
-        if (not from_matlab) and variable_revision_number == 7:
-            # Added adaptive thresholding settings
-            setting_values += [FI_IMAGE_SIZE, "10"]
-            variable_revision_number = 8
-
-        if (not from_matlab) and variable_revision_number == 8:
-            primary_objects, objects_name, method, image_name, \
-            threshold_method, threshold_correction_factor, \
-            threshold_range, object_fraction, distance_to_dilate, \
-            regularization_factor, outlines_name, manual_threshold, \
-            binary_image, use_outlines, two_class_otsu, \
-            use_weighted_variance, assign_middle_to_foreground, \
-            wants_discard_edge, wants_discard_primary, \
-            new_primary_objects_name, wants_primary_outlines, \
-            new_primary_outlines_name, thresholding_measurement, \
-            fill_holes, adaptive_window_method, \
-            adaptive_window_size = setting_values
-            setting_values = [
-                                 primary_objects, objects_name, method, image_name,
-                                 distance_to_dilate, regularization_factor, outlines_name,
-                                 use_outlines, wants_discard_edge, wants_discard_primary,
-                                 new_primary_objects_name, wants_primary_outlines,
-                                 new_primary_outlines_name, fill_holes] + \
-                             self.upgrade_legacy_threshold_settings(
-                                     threshold_method, cpmi.TSM_NONE,
-                                     threshold_correction_factor, threshold_range,
-                                     object_fraction, manual_threshold, thresholding_measurement,
-                                     binary_image, two_class_otsu, use_weighted_variance,
-                                     assign_middle_to_foreground, adaptive_window_method,
-                                     adaptive_window_size)
-            variable_revision_number = 9
-        setting_values = setting_values[:N_SETTING_VALUES] + \
-                         self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number, False
 
     def run(self, workspace):
         assert isinstance(workspace, cpw.Workspace)

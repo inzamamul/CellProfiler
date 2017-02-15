@@ -122,108 +122,18 @@ class ApplyThreshold(identify.Identify):
         return self.get_threshold_measurement_objects(
                 pipeline, object_name, category, measurement)
 
-    def upgrade_settings(self, setting_values,
-                         variable_revision_number, module_name,
-                         from_matlab):
-        if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
-                                        "ApplyThreshold with revision < 4")
-        if from_matlab and variable_revision_number == 4:
-            setting_values = [setting_values[0],  # ImageName
-                              setting_values[1],  # ThresholdedImageName
-                              None,
-                              None,
-                              None,
-                              setting_values[2],  # LowThreshold
-                              setting_values[3],  # Shift
-                              setting_values[4],  # HighThreshold
-                              setting_values[5],  # DilationValue
-                              centrosome.threshold.TM_MANUAL,  # Manual thresholding
-                              setting_values[6],  # BinaryChoice
-                              "0,1",  # Threshold range
-                              "1",  # Threshold correction factor
-                              ".2",  # Object fraction
-                              cellprofiler.setting.NONE  # Enclosing objects name
-                              ]
-            setting_values[2] = (BINARY if float(setting_values[10]) > 0
-                                 else GRAYSCALE)  # binary flag
-            setting_values[3] = (cellprofiler.setting.YES if float(setting_values[5]) > 0
-                                 else cellprofiler.setting.NO)  # low threshold set
-            setting_values[4] = (cellprofiler.setting.YES if float(setting_values[7]) > 0
-                                 else cellprofiler.setting.NO)  # high threshold set
-            variable_revision_number = 2
-            from_matlab = False
-        if (not from_matlab) and variable_revision_number == 1:
-            setting_values = (setting_values[:9] +
-                              [centrosome.threshold.TM_MANUAL, setting_values[9], "O,1", "1",
-                               ".2", cellprofiler.setting.NONE])
-            variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
-            # Added Otsu options
-            setting_values = list(setting_values)
-            setting_values += [identify.O_TWO_CLASS, identify.O_WEIGHTED_VARIANCE,
-                               identify.O_FOREGROUND]
-            variable_revision_number = 3
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+        if from_matlab:
+            raise NotImplementedError("There is no automatic upgrade path for this module from MatLab pipelines.")
 
-        if (not from_matlab) and variable_revision_number == 3:
-            #
-            # Only low or high, not both + removed manual threshold settings
-            #
-            if setting_values[3] == cellprofiler.setting.YES:
-                th = TH_BELOW_THRESHOLD
-            else:
-                th = TH_ABOVE_THRESHOLD
-            if setting_values[2] == GRAYSCALE:
-                # Grayscale used to have just manual thresholding
-                setting_values = list(setting_values)
-                setting_values[9] = centrosome.threshold.TM_MANUAL
-                if th == TH_BELOW_THRESHOLD:
-                    # Set to old low threshold
-                    setting_values[10] = setting_values[5]
-                else:
-                    setting_values[10] = setting_values[7]
-            setting_values = [setting_values[0],  # Image name
-                              setting_values[1],  # Thresholded image
-                              setting_values[2],  # binary or gray
-                              th,
-                              setting_values[6],  # shift
-                              ] + setting_values[8:]
-            variable_revision_number = 4
+        if variable_revision_number < 7:
+            raise NotImplementedError("Automatic upgrade for this module is not supported in CellProfiler 3.0.")
 
-        if (not from_matlab) and variable_revision_number == 4:
-            # Added measurements to threshold methods
-            setting_values = setting_values + [cellprofiler.setting.NONE]
-            variable_revision_number = 5
-
-        if (not from_matlab) and variable_revision_number == 5:
-            # Added adaptive thresholding settings
-            setting_values += [identify.FI_IMAGE_SIZE, "10"]
-            variable_revision_number = 6
-
-        if (not from_matlab) and variable_revision_number == 6:
-            image_name, thresholded_image_name, binary, low_or_high, \
-            shift, dilation, threshold_method, manual_threshold, \
-            threshold_range, threshold_correction_factor, \
-            object_fraction, enclosing_objects_name, \
-            two_class_otsu, use_weighted_variance, \
-            assign_middle_to_foreground, thresholding_measurement = \
-                setting_values[:16]
-            setting_values = [
-                                 image_name, thresholded_image_name, binary, low_or_high,
-                                 shift, dilation] + self.upgrade_legacy_threshold_settings(
-                    threshold_method, identify.TSM_NONE, threshold_correction_factor,
-                    threshold_range, object_fraction, manual_threshold,
-                    thresholding_measurement, cellprofiler.setting.NONE, two_class_otsu,
-                    use_weighted_variance, assign_middle_to_foreground,
-                    identify.FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
-            variable_revision_number = 7
-
-        if (not from_matlab) and variable_revision_number == 7:
+        if variable_revision_number == 7:
             setting_values = setting_values[:2] + setting_values[6:]
+
             variable_revision_number = 8
-        #
-        # Upgrade the threshold settings
-        #
-        setting_values = setting_values[:N_SETTINGS] + \
-                         self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
-        return setting_values, variable_revision_number, from_matlab
+
+        setting_values = setting_values[:N_SETTINGS] + self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
+
+        return setting_values, variable_revision_number, False
