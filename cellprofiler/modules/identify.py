@@ -184,9 +184,13 @@ class Identify(cellprofiler.module.Module):
     def threshold_image(self, image_name, workspace, automatic=False):
         input = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
+        data = input.pixel_data
+
+        mask = input.mask
+
         local_threshold, global_threshold = self.apply_threshold.get_threshold(
-            input.pixel_data,
-            input.mask,
+            data,
+            mask,
             workspace,
             automatic
         )
@@ -198,34 +202,9 @@ class Identify(cellprofiler.module.Module):
             global_threshold
         )
 
-        # I'm sorry
-        binary_image, smoothing_scale = self.do_threshold_image(
-            input.pixel_data,
-            input.mask,
-            local_threshold,
-            automatic
-        )
-
-        self.apply_threshold.add_fg_bg_measurements(
-            self.get_measurement_objects_name(),
-            workspace.measurements,
-            input.pixel_data,
-            input.mask,
-            binary_image
-        )
-
-        if hasattr(workspace, "display_data"):
-            workspace.display_data.threshold_sigma = smoothing_scale
-
-            if hasattr(workspace.display_data, "statistics"):
-                workspace.display_data.statistics.append(["Threshold", "%0.3g" % global_threshold])
-
-        return binary_image
-
-    def do_threshold_image(self, image, mask, threshold, automatic):
         if not automatic and self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
             sigma = 0
-            blurred_image = image
+            blurred_image = data
         else:
             if automatic:
                 sigma = 1
@@ -239,9 +218,25 @@ class Identify(cellprofiler.module.Module):
             def fn(img, sigma=sigma):
                 return scipy.ndimage.gaussian_filter(img, sigma, mode='constant', cval=0)
 
-            blurred_image = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
+            blurred_image = centrosome.smooth.smooth_with_function_and_mask(data, fn, mask)
 
-        return (blurred_image >= threshold) & mask, sigma
+        binary_image = (blurred_image >= local_threshold) & mask
+
+        self.apply_threshold.add_fg_bg_measurements(
+            self.get_measurement_objects_name(),
+            workspace.measurements,
+            data,
+            mask,
+            binary_image
+        )
+
+        if hasattr(workspace, "display_data"):
+            workspace.display_data.threshold_sigma = sigma
+
+            if hasattr(workspace.display_data, "statistics"):
+                workspace.display_data.statistics.append(["Threshold", "%0.3g" % global_threshold])
+
+        return binary_image
 
     def get_measurement_objects_name(self):
         '''Return the name of the measurement objects
