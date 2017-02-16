@@ -1251,10 +1251,10 @@ class IdentifyPrimaryObjects(identify.Identify):
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        result = self.get_threshold_measurements(pipeline, object_name,
-                                                 category)
-        result += self.get_object_measurements(pipeline, object_name, category,
-                                               {self.object_name.value: []})
+        result = super(IdentifyPrimaryObjects, self).get_measurements(pipeline, object_name, category)
+
+        result += self.get_object_measurements(pipeline, object_name, category, {self.object_name.value: []})
+
         return result
 
     def get_measurement_objects(self, pipeline, object_name, category,

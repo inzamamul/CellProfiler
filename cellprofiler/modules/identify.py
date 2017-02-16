@@ -268,16 +268,8 @@ class Identify(cellprofiler.module.Module):
             return [C_THRESHOLD]
         return []
 
-    def get_threshold_measurements(self, pipeline, object_name, category):
-        '''Return a list of threshold measurements for a given category
-
-        object_name - either "Image" or an object name
-        category - must be "Threshold" to get anything back
-        '''
-        if object_name == cellprofiler.measurement.IMAGE and category == C_THRESHOLD:
-            return [FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
-                    FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
-        return []
+    def get_measurements(self, pipeline, object_name, category):
+        return self.apply_threshold.get_measurements(pipeline, object_name, category)
 
     def get_threshold_measurement_objects(self, pipeline, object_name, category, measurement):
         '''Get the measurement objects for a threshold measurement
@@ -287,8 +279,7 @@ class Identify(cellprofiler.module.Module):
         category - the measurement category. (must be "Threshold")
         measurement - the feature being measured
         '''
-        if measurement in self.get_threshold_measurements(
-                pipeline, object_name, category):
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.get_measurement_objects_name()]
         else:
             return []

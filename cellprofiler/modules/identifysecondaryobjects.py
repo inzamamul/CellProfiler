@@ -845,12 +845,14 @@ class IdentifySecondaryObjects(identify.Identify):
         category - return measurements made in this category
         """
         object_dictionary = self.get_object_dictionary()
+
         result = []
+
         if self.method != M_DISTANCE_N:
-            result += self.get_threshold_measurements(pipeline, object_name,
-                                                      category)
-        result += self.get_object_measurements(pipeline, object_name,
-                                               category, object_dictionary)
+            result += super(IdentifySecondaryObjects, self).get_measurements(pipeline, object_name, category)
+
+        result += self.get_object_measurements(pipeline, object_name, category, object_dictionary)
+
         return result
 
     def get_object_dictionary(self):
