@@ -1788,96 +1788,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         segmented = objects.segmented
         self.assertTrue(numpy.all(segmented == 0))
 
-    def test_07_01_adaptive_otsu_small(self):
-        """Test the function, get_threshold, using Otsu adaptive / small
-
-        Use a small image (125 x 125) to break the image into four
-        pieces, check that the threshold is different in each block
-        and that there are four blocks broken at the 75 boundary
-        """
-        numpy.random.seed(0)
-        image = numpy.zeros((120, 110))
-        for i0, i1 in ((0, 60), (60, 120)):
-            for j0, j1 in ((0, 55), (55, 110)):
-                dmin = float(i0 * 2 + j0) / 500.0
-                dmult = 1.0 - dmin
-                # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
-                rsin = (numpy.sin(r) + 1) / 2
-                image[i0:i1, j0:j1] = dmin + rsin * dmult
-        workspace, x = self.make_workspace(image)
-        assert isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-        x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        threshold, global_threshold = x.get_threshold(
-                cellprofiler.image.Image(image), numpy.ones((120, 110), bool), workspace)
-        self.assertTrue(threshold[0, 0] != threshold[0, 109])
-        self.assertTrue(threshold[0, 0] != threshold[119, 0])
-        self.assertTrue(threshold[0, 0] != threshold[119, 109])
-
-    def test_07_02_adaptive_otsu_big(self):
-        """Test the function, get_threshold, using Otsu adaptive / big
-
-        Use a large image (525 x 525) to break the image into 100
-        pieces, check that the threshold is different in each block
-        and that boundaries occur where expected
-        """
-        numpy.random.seed(0)
-        image = numpy.zeros((525, 525))
-        blocks = []
-        for i in range(10):
-            for j in range(10):
-                # the following makes a pattern of thresholds where
-                # each square has a different threshold from its 8-connected
-                # neighbors
-                dmin = float((i % 2) * 2 + (j % 2)) / 8.0
-                dmult = 1.0 - dmin
-
-                def b(x):
-                    return int(float(x) * 52.5)
-
-                dim = ((b(i), b(i + 1)), (b(j), b(j + 1)))
-                blocks.append(dim)
-                ((i0, i1), (j0, j1)) = dim
-                # use the sine here to get a bimodal distribution of values
-                r = numpy.random.uniform(0, numpy.pi * 2, (i1 - i0, j1 - j0))
-                rsin = (numpy.sin(r) + 1) / 2
-                image[i0:i1, j0:j1] = dmin + rsin * dmult
-        workspace, x = self.make_workspace(image)
-        assert isinstance(x, cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
-        x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-        x.threshold_method.value = centrosome.threshold.TM_OTSU
-        threshold, global_threshold = x.get_threshold(
-                cellprofiler.image.Image(image), numpy.ones((525, 525), bool), workspace)
-
-    def test_09_01_small_images(self):
-        """Test mixture of gaussians thresholding with few pixels
-
-        Run MOG to see if it blows up, given 0-10 pixels"""
-        r = numpy.random.RandomState()
-        r.seed(91)
-        image = r.uniform(size=(9, 11))
-        ii, jj = numpy.mgrid[0:image.shape[0], 0:image.shape[1]]
-        ii, jj = ii.flatten(), jj.flatten()
-
-        for threshold_method in (centrosome.threshold.TM_MCT,
-                                 centrosome.threshold.TM_OTSU,
-                                 centrosome.threshold.TM_ROBUST_BACKGROUND):
-            for i in range(11):
-                mask = numpy.zeros(image.shape, bool)
-                if i:
-                    p = r.permutation(numpy.prod(image.shape))[:i]
-                    mask[ii[p], jj[p]] = True
-                workspace, x = self.make_workspace(image, mask)
-                x.threshold_method.value = threshold_method
-                x.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
-                l, g = x.get_threshold(cellprofiler.image.Image(image), mask, workspace)
-                v = image[mask]
-                image = r.uniform(size=(9, 11))
-                image[mask] = v
-                l1, g1 = x.get_threshold(cellprofiler.image.Image(image), mask, workspace)
-                self.assertAlmostEqual(l1, l)
-
     # def test_11_01_test_robust_background_fly(self):
     #     image = fly_image()
     #     workspace, x = self.make_workspace(image)
@@ -1887,18 +1797,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
     #         cpi.Image(image), np.ones(image.shape,bool), workspace)
     #     self.assertTrue(threshold > 0.09)
     #     self.assertTrue(threshold < 0.095)
-
-    def test_14_01_test_manual_background(self):
-        """Test manual background"""
-        workspace, x = self.make_workspace(numpy.zeros((10, 10)))
-        x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
-        x.threshold_scope.value = centrosome.threshold.TM_MANUAL
-        x.manual_threshold.value = .5
-        local_threshold, threshold = x.get_threshold(cellprofiler.image.Image(numpy.zeros((10, 10))),
-                                                     numpy.ones((10, 10), bool),
-                                                     workspace)
-        self.assertTrue(threshold == .5)
-        self.assertTrue(threshold == .5)
 
     def test_16_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''

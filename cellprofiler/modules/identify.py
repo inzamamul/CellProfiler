@@ -184,8 +184,8 @@ class Identify(cellprofiler.module.Module):
     def threshold_image(self, image_name, workspace, automatic=False):
         input = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.get_threshold(
-            input,
+        local_threshold, global_threshold = self.apply_threshold.get_threshold(
+            input.pixel_data,
             input.mask,
             workspace,
             automatic
@@ -221,14 +221,6 @@ class Identify(cellprofiler.module.Module):
                 workspace.display_data.statistics.append(["Threshold", "%0.3g" % global_threshold])
 
         return binary_image
-
-    def get_threshold(self, image, mask, workspace, automatic=False):
-        return self.apply_threshold.get_threshold(
-            image.pixel_data,
-            mask,
-            workspace,
-            automatic
-        )
 
     def do_threshold_image(self, image, mask, threshold, automatic):
         if not automatic and self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
