@@ -833,7 +833,7 @@ class IdentifySecondaryObjects(identify.Identify):
         object_dictionary = self.get_object_dictionary()
         categories = []
         if self.method != M_DISTANCE_N:
-            categories += self.get_threshold_categories(pipeline, object_name)
+            categories += super(IdentifySecondaryObjects, self).get_categories(pipeline, object_name)
         categories += self.get_object_categories(pipeline, object_name,
                                                  object_dictionary)
         return categories

@@ -262,11 +262,8 @@ class Identify(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         return applythreshold.image_measurement_columns(self.get_measurement_objects_name())
 
-    def get_threshold_categories(self, pipeline, object_name):
-        '''Get categories related to thresholding'''
-        if object_name == cellprofiler.measurement.IMAGE:
-            return [C_THRESHOLD]
-        return []
+    def get_categories(self, pipeline, object_name):
+        return self.apply_threshold.get_categories(pipeline, object_name)
 
     def get_measurements(self, pipeline, object_name, category):
         return self.apply_threshold.get_measurements(pipeline, object_name, category)

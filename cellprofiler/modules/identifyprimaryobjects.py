@@ -1240,7 +1240,7 @@ class IdentifyPrimaryObjects(identify.Identify):
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        result = self.get_threshold_categories(pipeline, object_name)
+        result = super(IdentifyPrimaryObjects, self).get_categories(pipeline, object_name)
         result += self.get_object_categories(pipeline, object_name,
                                              {self.object_name.value: []})
         return result
