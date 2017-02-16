@@ -584,7 +584,7 @@ class ApplyThreshold(cellprofiler.module.Module):
             global_threshold
         )
 
-        binary_image = self.apply_threshold(input.pixel_data, input.mask, local_threshold)
+        binary_image, _ = self.apply_threshold(input.pixel_data, input.mask, local_threshold)
 
         self.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
@@ -616,9 +616,8 @@ class ApplyThreshold(cellprofiler.module.Module):
 
         return centrosome.threshold.TM_ADAPTIVE
 
-    def apply_threshold(self, image, mask, threshold):
-        # TODO: Remove threshold smoothing from this module. Should be done only in Identify.
-        if self.threshold_scope in [TS_MEASUREMENT, TS_MANUAL]:
+    def apply_threshold(self, image, mask, threshold, automatic=False):
+        if not automatic and self.threshold_scope in [TS_MEASUREMENT, TS_MANUAL]:
             sigma = 0
             blurred_image = image
         else:
@@ -633,7 +632,7 @@ class ApplyThreshold(cellprofiler.module.Module):
 
             blurred_image = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
 
-        return (blurred_image >= threshold) & mask
+        return (blurred_image >= threshold) & mask, sigma
 
     def get_threshold(self, img, mask, workspace, automatic=False):
         if automatic:

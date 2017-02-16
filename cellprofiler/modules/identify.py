@@ -188,12 +188,7 @@ class Identify(cellprofiler.module.Module):
 
         mask = input.mask
 
-        local_threshold, global_threshold = self.apply_threshold.get_threshold(
-            data,
-            mask,
-            workspace,
-            automatic
-        )
+        local_threshold, global_threshold = self.apply_threshold.get_threshold(data, mask, workspace, automatic)
 
         self.apply_threshold.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -202,25 +197,7 @@ class Identify(cellprofiler.module.Module):
             global_threshold
         )
 
-        if not automatic and self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
-            sigma = 0
-            blurred_image = data
-        else:
-            if automatic:
-                sigma = 1
-            else:
-                # Convert from a scale into a sigma. What I've done here
-                # is to structure the Gaussian so that 1/2 of the smoothed
-                # intensity is contributed from within the smoothing diameter
-                # and 1/2 is contributed from outside.
-                sigma = self.threshold_smoothing_scale.value / 0.6744 / 2.0
-
-            def fn(img, sigma=sigma):
-                return scipy.ndimage.gaussian_filter(img, sigma, mode='constant', cval=0)
-
-            blurred_image = centrosome.smooth.smooth_with_function_and_mask(data, fn, mask)
-
-        binary_image = (blurred_image >= local_threshold) & mask
+        binary_image, sigma = self.apply_threshold.apply_threshold(data, mask, local_threshold, automatic)
 
         self.apply_threshold.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
