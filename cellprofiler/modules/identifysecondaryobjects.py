@@ -807,7 +807,7 @@ class IdentifySecondaryObjects(identify.Identify):
                      identify.FF_PARENT % self.primary_objects.value,
                      cellprofiler.measurement.COLTYPE_INTEGER)]
         if self.method != M_DISTANCE_N:
-            columns += identify.get_threshold_measurement_columns(self.objects_name.value)
+            columns += super(IdentifySecondaryObjects, self).get_measurement_columns(pipeline)
         if self.wants_discard_edge and self.wants_discard_primary:
             columns += identify.get_object_measurement_columns(self.new_primary_objects_name.value)
             columns += [(self.new_primary_objects_name.value,

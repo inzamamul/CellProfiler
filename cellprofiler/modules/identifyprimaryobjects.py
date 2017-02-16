@@ -1232,7 +1232,7 @@ class IdentifyPrimaryObjects(identify.Identify):
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
         columns = identify.get_object_measurement_columns(self.object_name.value)
-        columns += self.get_threshold_measurement_columns(pipeline)
+        columns += super(IdentifyPrimaryObjects, self).get_measurement_columns(pipeline)
         return columns
 
     def get_categories(self, pipeline, object_name):

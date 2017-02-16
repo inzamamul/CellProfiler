@@ -259,14 +259,8 @@ class Identify(cellprofiler.module.Module):
         '''
         raise NotImplementedError("Please implement get_measurement_objects_name() for this module")
 
-    def get_threshold_measurement_columns(self, pipeline):
-        '''Return the measurement columns for the threshold measurements'''
-        features = [FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE]
-        if self.threshold_scope != TS_BINARY_IMAGE:
-            features += [FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD]
-        return [(cellprofiler.measurement.IMAGE,
-                 ftr % self.get_measurement_objects_name(),
-                 cellprofiler.measurement.COLTYPE_FLOAT) for ftr in features]
+    def get_measurement_columns(self, pipeline):
+        return applythreshold.image_measurement_columns(self.get_measurement_objects_name())
 
     def get_threshold_categories(self, pipeline, object_name):
         '''Get categories related to thresholding'''
@@ -426,14 +420,3 @@ def get_object_measurement_columns(object_name):
             (object_name, M_LOCATION_CENTER_Y, cellprofiler.measurement.COLTYPE_FLOAT),
             (object_name, M_NUMBER_OBJECT_NUMBER, cellprofiler.measurement.COLTYPE_INTEGER),
             (cellprofiler.measurement.IMAGE, FF_COUNT % object_name, cellprofiler.measurement.COLTYPE_INTEGER)]
-
-
-def get_threshold_measurement_columns(image_name):
-    '''Get the column definitions for threshold measurements, if made
-
-    image_name - name of the image
-    '''
-    return [(cellprofiler.measurement.IMAGE, FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]

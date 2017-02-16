@@ -752,12 +752,7 @@ class ApplyThreshold(cellprofiler.module.Module):
     def get_measurement_columns(self, pipeline):
         image_name = self.thresholded_image_name.value
 
-        return [
-            (cellprofiler.measurement.IMAGE, FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
-            (cellprofiler.measurement.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)
-        ]
+        return image_measurement_columns(image_name)
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -900,3 +895,10 @@ class ApplyThreshold(cellprofiler.module.Module):
                 ),
                 self.upper_outlier_fraction
             )
+
+
+def image_measurement_columns(image_name):
+    return [(cellprofiler.measurement.IMAGE, FF_FINAL_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, FF_ORIG_THRESHOLD % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, FF_WEIGHTED_VARIANCE % image_name, cellprofiler.measurement.COLTYPE_FLOAT),
+            (cellprofiler.measurement.IMAGE, FF_SUM_OF_ENTROPIES % image_name, cellprofiler.measurement.COLTYPE_FLOAT)]
