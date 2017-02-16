@@ -12,7 +12,6 @@ import cellprofiler.image
 import cellprofiler.measurement
 import cellprofiler.module
 import cellprofiler.modules.applythreshold
-import cellprofiler.modules.identify
 import cellprofiler.object
 import cellprofiler.pipeline
 import cellprofiler.preferences
@@ -127,7 +126,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
         self.assertEqual(module.image_name.value, "RainbowPony")
         self.assertEqual(module.thresholded_image_name.value, "GrayscalePony")
-        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.identify.TS_ADAPTIVE)
+        self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_ADAPTIVE)
         self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
         self.assertEqual(module.threshold_correction_factor.value, 1.1)
@@ -135,8 +134,8 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_range.max, .99)
         self.assertEqual(module.manual_threshold.value, 0.1)
         self.assertEqual(module.thresholding_measurement.value, "Pony_Perimeter")
-        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground.value, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu.value, cellprofiler.modules.applythreshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground.value, cellprofiler.modules.applythreshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size.value, 13)
 
     def test_01_08_load_v8(self):
@@ -224,7 +223,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.thresholded_image_name, "ThreshBlue")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
@@ -232,8 +231,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         self.assertEqual(module.threshold_range.max, 1.0)
         self.assertEqual(module.manual_threshold, 0.0)
         self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.applythreshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.applythreshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 50)
 
     def test_01_09_load_v9(self):
@@ -319,7 +318,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
         self.assertEqual(module.image_name, "DNA")
         self.assertEqual(module.thresholded_image_name, "ApplyThreshold")
-        self.assertEqual(module.threshold_scope, cellprofiler.modules.identify.TS_GLOBAL)
+        self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale, 0)
         self.assertEqual(module.threshold_correction_factor, 1.0)
@@ -327,8 +326,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         self.assertEqual(module.threshold_range.max, 1.0)
         self.assertEqual(module.manual_threshold, 0.0)
         self.assertEqual(module.thresholding_measurement, "None")
-        self.assertEqual(module.two_class_otsu, cellprofiler.modules.identify.O_TWO_CLASS)
-        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.identify.O_FOREGROUND)
+        self.assertEqual(module.two_class_otsu, cellprofiler.modules.applythreshold.O_TWO_CLASS)
+        self.assertEqual(module.assign_middle_to_foreground, cellprofiler.modules.applythreshold.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_size, 50)
 
     def test_04_01_binary_manual(self):
@@ -350,7 +349,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         threshold = centrosome.threshold.get_otsu_threshold(image)
         expected = image > threshold
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -363,7 +362,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         threshold = centrosome.threshold.get_otsu_threshold(image) * .5
         expected = image > threshold
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.threshold_correction_factor.value = .5
         module.run(workspace)
@@ -378,7 +377,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         image[(image > .4) & (image < .6)] = .5
         expected = image > .7
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.threshold_range.min = .7
         module.run(workspace)
@@ -392,7 +391,7 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         image = numpy.random.uniform(size=(40, 40))
         expected = image > .1
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
         module.threshold_range.max = .1
         module.run(workspace)
@@ -427,9 +426,9 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         threshold = centrosome.threshold.inverse_log_transform(threshold, d)
         expected = image > threshold
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
-        module.two_class_otsu.value = cellprofiler.modules.identify.O_TWO_CLASS
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_TWO_CLASS
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(numpy.all(output.pixel_data == expected))
@@ -446,13 +445,13 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         t1, t2 = centrosome.otsu.otsu3(limage)
         threshold = centrosome.threshold.inverse_log_transform(t2, d)
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
-        module.two_class_otsu.value = cellprofiler.modules.identify.O_THREE_CLASS
-        module.assign_middle_to_foreground.value = cellprofiler.modules.identify.O_BACKGROUND
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_BACKGROUND
         module.run(workspace)
         m = workspace.measurements
-        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.applythreshold.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
 
     def test_05_04_otsu3_wv_high(self):
@@ -467,11 +466,11 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         t1, t2 = centrosome.otsu.otsu3(limage)
         threshold = centrosome.threshold.inverse_log_transform(t1, d)
         workspace, module = self.make_workspace(image)
-        module.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+        module.threshold_scope.value = cellprofiler.modules.applythreshold.TS_GLOBAL
         module.threshold_method.value = centrosome.threshold.TM_OTSU
-        module.two_class_otsu.value = cellprofiler.modules.identify.O_THREE_CLASS
-        module.assign_middle_to_foreground.value = cellprofiler.modules.identify.O_FOREGROUND
+        module.two_class_otsu.value = cellprofiler.modules.applythreshold.O_THREE_CLASS
+        module.assign_middle_to_foreground.value = cellprofiler.modules.applythreshold.O_FOREGROUND
         module.run(workspace)
         m = workspace.measurements
-        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.identify.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        m_threshold = m[cellprofiler.measurement.IMAGE, cellprofiler.modules.applythreshold.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
