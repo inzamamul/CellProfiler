@@ -872,8 +872,13 @@ class IdentifySecondaryObjects(identify.Identify):
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if self.method != M_DISTANCE_N:
-            return self.get_threshold_measurement_objects(
-                    pipeline, object_name, category, measurement)
+            return super(IdentifySecondaryObjects, self).get_measurement_objects(
+                pipeline,
+                object_name,
+                category,
+                measurement
+            )
+
         return []
 
     def get_measurement_objects_name(self):

@@ -271,18 +271,11 @@ class Identify(cellprofiler.module.Module):
     def get_measurements(self, pipeline, object_name, category):
         return self.apply_threshold.get_measurements(pipeline, object_name, category)
 
-    def get_threshold_measurement_objects(self, pipeline, object_name, category, measurement):
-        '''Get the measurement objects for a threshold measurement
-
-        pipeline - not used
-        object_name - either "Image" or an object name. (must be "Image")
-        category - the measurement category. (must be "Threshold")
-        measurement - the feature being measured
-        '''
+    def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.get_measurement_objects_name()]
-        else:
-            return []
+
+        return []
 
     def get_object_categories(self, pipeline, object_name, object_dictionary):
         '''Get categories related to creating new children
