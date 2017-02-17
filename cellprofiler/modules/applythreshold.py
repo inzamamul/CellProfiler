@@ -79,24 +79,13 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class ApplyThreshold(cellprofiler.module.Module):
+class ApplyThreshold(cellprofiler.module.ImageProcessing):
     module_name = "ApplyThreshold"
 
     variable_revision_number = 9
 
-    category = "Image Processing"
-
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
-            "Select the input image",
-            doc="Choose the image to be thresholded."
-        )
-
-        self.thresholded_image_name = cellprofiler.setting.ImageNameProvider(
-            "Name the output image",
-            "ThreshBlue",
-            doc="Enter a name for the thresholded image."
-        )
+        super(ApplyThreshold, self).create_settings()
 
         self.threshold_scope = cellprofiler.setting.Choice(
             "Threshold strategy",
@@ -492,11 +481,9 @@ class ApplyThreshold(cellprofiler.module.Module):
         )
 
     def visible_settings(self):
-        visible_settings = [
-            self.image_name,
-            self.thresholded_image_name,
-            self.threshold_scope
-        ]
+        visible_settings = super(ApplyThreshold, self).visible_settings()
+
+        visible_settings += [self.threshold_scope]
 
         if self.threshold_scope == TS_MANUAL:
             visible_settings += [self.manual_threshold]
@@ -531,9 +518,9 @@ class ApplyThreshold(cellprofiler.module.Module):
         return visible_settings
 
     def settings(self):
-        return [
-            self.image_name,
-            self.thresholded_image_name,
+        settings = super(ApplyThreshold, self).settings()
+
+        return settings + [
             self.threshold_scope,
             self.threshold_method,
             self.threshold_smoothing_scale,
@@ -553,8 +540,8 @@ class ApplyThreshold(cellprofiler.module.Module):
 
     def help_settings(self):
         return [
-            self.image_name,
-            self.thresholded_image_name,
+            self.x_name,
+            self.y_name,
             self.threshold_scope,
             self.threshold_method,
             self.manual_threshold,
@@ -573,7 +560,7 @@ class ApplyThreshold(cellprofiler.module.Module):
         ]
 
     def run(self, workspace):
-        input = workspace.image_set.get_image(self.image_name.value, must_be_grayscale=True)
+        input = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
 
         local_threshold, global_threshold = self.get_threshold(input.pixel_data, input.mask, workspace)
 
@@ -596,7 +583,7 @@ class ApplyThreshold(cellprofiler.module.Module):
 
         output = cellprofiler.image.Image(binary_image, parent_image=input)
 
-        workspace.image_set.add(self.thresholded_image_name.value, output)
+        workspace.image_set.add(self.y_name.value, output)
 
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
@@ -618,8 +605,10 @@ class ApplyThreshold(cellprofiler.module.Module):
 
     def apply_threshold(self, image, mask, threshold, automatic=False):
         if not automatic and self.threshold_scope in [TS_MEASUREMENT, TS_MANUAL]:
-            sigma = 0
-            blurred_image = image
+            return (image >= threshold) & mask, 0
+
+        if automatic:
+            sigma = 1
         else:
             # Convert from a scale into a sigma. What I've done here
             # is to structure the Gaussian so that 1/2 of the smoothed
@@ -627,10 +616,11 @@ class ApplyThreshold(cellprofiler.module.Module):
             # and 1/2 is contributed from outside.
             sigma = self.threshold_smoothing_scale.value / 0.6744 / 2.0
 
-            def fn(img, sigma=sigma):
-                return scipy.ndimage.gaussian_filter(img, sigma, mode='constant', cval=0)
-
-            blurred_image = centrosome.smooth.smooth_with_function_and_mask(image, fn, mask)
+        blurred_image = centrosome.smooth.smooth_with_function_and_mask(
+            image,
+            lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
+            mask
+        )
 
         return (blurred_image >= threshold) & mask, sigma
 
@@ -711,18 +701,18 @@ class ApplyThreshold(cellprofiler.module.Module):
 
         figure.subplot_imshow_grayscale(0, 0, workspace.display_data.input_pixel_data,
                                         title="Original image: %s" %
-                                              self.image_name.value)
+                                              self.x_name.value)
 
         figure.subplot_imshow_grayscale(1, 0, workspace.display_data.output_pixel_data,
                                         title="Thresholded image: %s" %
-                                              self.thresholded_image_name.value,
+                                              self.y_name.value,
                                         sharexy=figure.subplot(0, 0))
         figure.subplot_table(
                 2, 0, workspace.display_data.statistics,
                 workspace.display_data.col_labels)
 
     def get_measurement_objects_name(self):
-        return self.thresholded_image_name.value
+        return self.y_name.value
 
     def add_threshold_measurements(self, objname, measurements, local_threshold, global_threshold):
         ave_threshold = numpy.mean(numpy.atleast_1d(local_threshold))
@@ -749,9 +739,7 @@ class ApplyThreshold(cellprofiler.module.Module):
         )
 
     def get_measurement_columns(self, pipeline):
-        image_name = self.thresholded_image_name.value
-
-        return image_measurement_columns(image_name)
+        return image_measurement_columns(self.get_measurement_objects_name())
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler.measurement.IMAGE:
@@ -771,7 +759,7 @@ class ApplyThreshold(cellprofiler.module.Module):
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if measurement in self.get_threshold_measurements(pipeline, object_name, category):
+        if measurement in self.get_measurements(pipeline, object_name, category):
             return [self.get_measurement_objects_name()]
 
         return []

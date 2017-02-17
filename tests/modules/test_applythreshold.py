@@ -28,8 +28,8 @@ class TestApplyThreshold(unittest.TestCase):
     def make_workspace(self, image, mask=None):
         '''Make a workspace for testing ApplyThreshold'''
         module = cellprofiler.modules.applythreshold.ApplyThreshold()
-        module.image_name.value = INPUT_IMAGE_NAME
-        module.thresholded_image_name.value = OUTPUT_IMAGE_NAME
+        module.x_name.value = INPUT_IMAGE_NAME
+        module.y_name.value = OUTPUT_IMAGE_NAME
         pipeline = cellprofiler.pipeline.Pipeline()
         object_set = cellprofiler.object.ObjectSet()
         image_set_list = cellprofiler.image.ImageSetList()
@@ -124,8 +124,8 @@ class TestApplyThreshold(unittest.TestCase):
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
-        self.assertEqual(module.image_name.value, "RainbowPony")
-        self.assertEqual(module.thresholded_image_name.value, "GrayscalePony")
+        self.assertEqual(module.x_name.value, "RainbowPony")
+        self.assertEqual(module.y_name.value, "GrayscalePony")
         self.assertEqual(module.threshold_scope.value, cellprofiler.modules.applythreshold.TS_ADAPTIVE)
         self.assertEqual(module.threshold_method.value, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale.value, 1.3488)
@@ -221,8 +221,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:8|
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.thresholded_image_name, "ThreshBlue")
+        self.assertEqual(module.x_name, "DNA")
+        self.assertEqual(module.y_name, "ThreshBlue")
         self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale, 0)
@@ -316,8 +316,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         pipeline.loadtxt(fd)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cellprofiler.modules.applythreshold.ApplyThreshold))
-        self.assertEqual(module.image_name, "DNA")
-        self.assertEqual(module.thresholded_image_name, "ApplyThreshold")
+        self.assertEqual(module.x_name, "DNA")
+        self.assertEqual(module.y_name, "ApplyThreshold")
         self.assertEqual(module.threshold_scope, cellprofiler.modules.applythreshold.TS_GLOBAL)
         self.assertEqual(module.threshold_method, centrosome.threshold.TM_MCT)
         self.assertEqual(module.threshold_smoothing_scale, 0)
@@ -408,8 +408,8 @@ ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|
         module.run(workspace)
 
         module2 = cellprofiler.modules.applythreshold.ApplyThreshold()
-        module2.image_name.value = OUTPUT_IMAGE_NAME
-        module2.thresholded_image_name.value = OUTPUT_IMAGE_NAME + 'new'
+        module2.x_name.value = OUTPUT_IMAGE_NAME
+        module2.y_name.value = OUTPUT_IMAGE_NAME + 'new'
         module2.threshold_scope.value = centrosome.threshold.TM_MEASUREMENT
         module2.thresholding_measurement.value = 'Threshold_FinalThreshold_' + OUTPUT_IMAGE_NAME
         module2.run(workspace)
